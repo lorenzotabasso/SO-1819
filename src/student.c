@@ -7,4 +7,4 @@ typedef struct {
     int nof_invites;
     int max_reject;
     int final_mark;
-} student
+} student;

@@ -1,5 +1,6 @@
 //Gestore
 
+#include "gestore.h"
 #define POP_SIZE 4
 
 int main() {
