@@ -1,5 +1,5 @@
 # Compiler's Flags
-CFLAGS = -g -Wall -Wpedantic -Wno-padded -Werror
+CFLAGS = -g -Wall -Wpedantic
 
 build/student.o: src/student.c src/student.h Makefile
 	$(CC) $(CFLAGS) -c src/student.c -o build/student.o

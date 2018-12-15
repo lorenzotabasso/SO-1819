@@ -5,7 +5,8 @@
 
 int main() {
 	pid_t my_pid, my_ppid, value;
-	int var = 4
+	pid_t child;
+	int var = 4;
 
 	switch (value = fork()) {
 		case -1:
@@ -17,6 +18,7 @@ int main() {
 			/* Perform actions specific to child */
 			my_pid = getpid();
 			my_ppid = getppid();
+			child = getpid();
 			printf("CHILD:  PID=%d, PPID=%d, fork_value=%d\n",
 			       my_pid, my_ppid, value);
 			//sleep(2);   /* "waiting" the parent proc to modify var */
@@ -31,7 +33,7 @@ int main() {
 			       my_pid, my_ppid, value);
 			var = 8;
 			printf("PARENT: var=%d\n", var);
-			wait();
+			wait(&child);
 			printf("ATTENDING...");
 			break;
 		}
