@@ -1,6 +1,8 @@
 # Project text on Lorenzo's computer
 # "Description contains all the project texts"
 description/
+bin/
+build/
 
 # APPLE ------------------------------------------------------------------------
 
