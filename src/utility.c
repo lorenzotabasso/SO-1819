@@ -1,18 +1,20 @@
 #include "common.h"
 
-int msg_queue_id;
+void print_error(int en){
+    fprintf(stderr,"Error #%03d: %s\n", en, strerror(en));
+}
 
 void init_msg_queue(){
     msg_queue_id = msgget(IPC_PRIVATE, 0400 | 0200);
     if (msg_queue_id == -1) {
-        fprintf(stderr,"Error #%03d: %s\n", errno, strerror(errno));
+        print_error(errno);
     }
     printf("Created message queue with ID: %d\n", msg_queue_id);
 }
 
-void deallocate_IPCs (){
+void deallocate_IPCs(){
     if (msgctl(msg_queue_id, IPC_RMID, NULL) == -1){
-        fprintf(stderr,"Error #%03d: %s\n", errno, strerror(errno));
+        print_error(errno);
     }
 //    if (semctl(semaforoPalla, 0, IPC_RMID) == -1){
 //        Error();

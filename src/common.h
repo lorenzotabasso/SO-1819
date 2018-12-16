@@ -18,4 +18,11 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+/* Utility.c */
+int msg_queue_id;
+
+void print_error(int en);
+void init_msg_queue();
+void deallocate_IPCs();
+
 #endif //SO_18_19_COMMON_H

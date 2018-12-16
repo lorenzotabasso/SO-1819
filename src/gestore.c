@@ -1,11 +1,10 @@
 #include "common.h"
 
 int main() {
-	pid_t my_pid, my_ppid, value;
+	pid_t my_pid, my_ppid;
 	pid_t child;
-	int var = 4;
 
-	switch (value = fork()) {
+	switch (fork()) {
 
 	    case -1:
 			/* Handle error */
