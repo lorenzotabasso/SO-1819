@@ -60,7 +60,6 @@ $RECYCLE.BIN/
 *.lnk
 
 # CLION ------------------------------------------------------------------------
-so-18-19/CMakeLists.txt
-so-18-19/cmake-build-debug/
-so-18-19/.idea
-
+CMakeLists.txt
+cmake-build-debug/
+.idea/
