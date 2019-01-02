@@ -1,5 +1,5 @@
-#ifndef SO_18_19_COMMON_H
-#define SO_18_19_COMMON_H
+#ifndef COMMON_H
+#define COMMON_H
 
 #define POP_SIZE 4
 
@@ -21,8 +21,13 @@
 /* Utility.c */
 int msg_queue_id;
 
+// It prints the error to stderr.
 void print_error(int en);
+
+// It initializes the common message queue for all the processes.
 void init_msg_queue();
+
+// It deallocates all the IPC allocated before.
 void deallocate_IPCs();
 
-#endif //SO_18_19_COMMON_H
+#endif // COMMON_H

@@ -8,7 +8,7 @@ int main() {
 
 	    case -1:
 			/* Handle error */
-			fprintf(stderr,"Error #%03d: %s\n", errno, strerror(errno));
+			print_error(errno);
 			break;
 			
 		case 0:
@@ -31,7 +31,7 @@ int main() {
 		}
 		/* Both child and parent process will execute here!! */
 
-        printf("COMMON AREA PID: %d\n", getpid());
+		printf("COMMON AREA PID: %d\n", getpid());
 
 		exit(EXIT_SUCCESS);
 }

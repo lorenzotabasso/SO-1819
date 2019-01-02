@@ -1,8 +1,8 @@
 #include "common.h"
 
 typedef struct {
-    int matricola;
-    int voto_AdE;
+    int id;
+    int AdE_mark;
     int nof_elem;
     int ask;
     int nof_invites;
