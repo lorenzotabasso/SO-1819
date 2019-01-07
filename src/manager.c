@@ -19,37 +19,24 @@ void search_mate(){
 
 }
 
-int num_alive_procs;
-
 int main (int argc, char * argv[]) {
-    int num_proc;
-    pid_t child_pid, *all_kids;
+    int num_alive_procs;
+    pid_t child_pid, * all_kids;
     int status;
 
-    /* If passed an argument to the executable */
-    if (argc > 1) {
-        /* If the argument is not a non-zero number */
-        if (!(num_proc = atoi(argv[1]))) {
-            num_proc = 8;
-        }
-    } else {
-        num_proc = 4;
-    }
-
     /* vector of kids PIDs */
-    all_kids = malloc(num_proc * sizeof(*all_kids));
+    all_kids = malloc(POP_SIZE * sizeof(* all_kids));
 
-    printf("PARENT (PID=%d): creating %d child processes\n",
-           getpid(), num_proc);
-    for (num_alive_procs = 0; num_alive_procs < num_proc; num_alive_procs++) {
+    printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
+
+    for (num_alive_procs = 0; num_alive_procs < POP_SIZE; num_alive_procs++) {
         switch (child_pid = fork()) {
             case -1:
                 /* Handle error */
+                print_error(errno);
                 exit(EXIT_FAILURE);
             case 0:
                 /* CHILD CODE */
-//                /* Free the array: not needed in child */
-//                free(all_kids);
                 printf("CHILD (PID=%d): id=%d, running stuff\n", getpid(), num_alive_procs);
                 exit(num_alive_procs);
                 break;
@@ -64,11 +51,8 @@ int main (int argc, char * argv[]) {
 
     /* checking if any child proc terminated, stopped or continued */
 
-#if 1   /* wait for any child process */
+   /* wait for any child process ("-1")*/
     while ((child_pid = waitpid(-1, &status, WUNTRACED | WCONTINUED)) != -1) {
-#else   /* wait for child processes from the latest created */
-        while ((child_pid = waitpid(all_kids[num_alive_procs-1], &status, WUNTRACED | WCONTINUED)) != -1)
-#endif
 
         printf("PARENT (PID=%d): Got info from child with PID=%d. Status 0x%04X\n", getpid(), child_pid, status);
 
@@ -81,12 +65,6 @@ int main (int argc, char * argv[]) {
         if (WIFSIGNALED(status)) {
             /* the child proc terminated by signal, must decrement num_alive_procs */
             printf("  child terminated by the signal %d\n", WTERMSIG(status));
-#ifdef WCOREDUMP
-            if (WCOREDUMP(status)) {
-                printf("  child produced a core dump\n");
-            }
-#endif
-
             num_alive_procs--;
         }
         if (WIFSTOPPED(status)) {
