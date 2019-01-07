@@ -33,6 +33,7 @@ int main (int argc, char * argv[]) {
         }
     }
 
+    // TODO: only for debug, to move in other line
     read_conf("/Volumes/HDD/Lorenzo/Unito/2 Anno/SO/Progetto/Progetto 2018-2019/so-18-19/src/opt.conf");
 
     /* PARENT CODE: the child processes exited already */
