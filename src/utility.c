@@ -1,8 +1,17 @@
-#include "common.h"
+#include "utility.h"
 
 int print_error(int en){
     fprintf(stderr,"Error #%03d: %s\n", en, strerror(en));
     return en;
+}
+
+int random_between(pid_t seed, int min, int max) {
+    if (seed != 1) {
+        srand((unsigned) seed); // pid of the calling process
+    } else {
+        srand((unsigned) getpid()); // pid of this process
+    }
+    return rand() % (max + 1 - min) + min;
 }
 
 void init_msg_queue(){

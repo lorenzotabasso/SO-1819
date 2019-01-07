@@ -1,33 +1,17 @@
-#include "common.h"
-
-typedef struct {
-    int id;
-    int AdE_mark;
-    int nof_elem;
-    int ask;
-    int nof_invites;
-    int max_reject;
-    int final_mark;
-} student;
-
-int get_random_mark(){
-    srand((unsigned) getpid());
-    return rand() % (30 + 1 - 18) + 18;
-}
-
-void search_mate(){
-
-}
+#include "manager.h"
+#include "student.h"
+#include "utility.h"
 
 int main (int argc, char * argv[]) {
     int num_alive_procs;
-    pid_t child_pid, * all_kids;
+    pid_t child_pid, * population;
     int status;
+    student stud = {.ade_mark=0, .max_reject=0, .nof_invites=0, .ask=0, .id=0, .final_mark=0, .nof_elem=0};
 
     /* vector of kids PIDs */
-    all_kids = malloc(POP_SIZE * sizeof(* all_kids));
+    population = malloc(POP_SIZE * sizeof(* population));
 
-    printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
+    printf("PARENT (PID: %d): creating %d child processes\n", getpid(), POP_SIZE);
 
     for (num_alive_procs = 0; num_alive_procs < POP_SIZE; num_alive_procs++) {
         switch (child_pid = fork()) {
@@ -37,15 +21,19 @@ int main (int argc, char * argv[]) {
                 exit(EXIT_FAILURE);
             case 0:
                 /* CHILD CODE */
-                printf("CHILD (PID=%d): id=%d, running stuff\n", getpid(), num_alive_procs);
+                set_rand_ade_mark(stud);
+                printf("STUDENT (PID: %d): I'm Stud number %d, ADE_Mark: %d\n", getpid(), num_alive_procs, stud.ade_mark);
+
                 exit(num_alive_procs);
                 break;
             default:
                 /* PARENT CODE */
-                printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), all_kids[num_alive_procs] = child_pid);
+                printf("PARENT (PID: %d): created child (PID: %d)\n", getpid(), population[num_alive_procs] = child_pid);
                 break;
         }
     }
+
+    read_conf("/Volumes/HDD/Lorenzo/Unito/2 Anno/SO/Progetto/Progetto 2018-2019/so-18-19/src/opt.conf");
 
     /* PARENT CODE: the child processes exited already */
 
@@ -54,78 +42,33 @@ int main (int argc, char * argv[]) {
    /* wait for any child process ("-1")*/
     while ((child_pid = waitpid(-1, &status, WUNTRACED | WCONTINUED)) != -1) {
 
-        printf("PARENT (PID=%d): Got info from child with PID=%d. Status 0x%04X\n", getpid(), child_pid, status);
+        printf("PARENT (PID: %d): Got info from child with PID=%d. Status 0x%04X\n", getpid(), child_pid, status);
 
         /* Checking the status */
         if (WIFEXITED(status)) {
             /* the child proc exited, must decrement num_alive_procs */
-            printf("  child correctly exited with status %d\n", WEXITSTATUS(status));
+            printf("\tchild correctly exited with status %d\n", WEXITSTATUS(status));
             num_alive_procs--;
         }
         if (WIFSIGNALED(status)) {
             /* the child proc terminated by signal, must decrement num_alive_procs */
-            printf("  child terminated by the signal %d\n", WTERMSIG(status));
+            printf("\tchild terminated by the signal %d\n", WTERMSIG(status));
             num_alive_procs--;
         }
         if (WIFSTOPPED(status)) {
-            printf("  child stopped by the signal %d\n", WSTOPSIG(status));
+            printf("\tchild stopped by the signal %d\n", WSTOPSIG(status));
         }
         if (WIFCONTINUED(status)) {
-            printf("  child continued after being stopped\n");
+            printf("\tchild continued after being stopped\n");
         }
 
-        printf("PARENT (PID=%d): Kids left=%d\n", getpid(), num_alive_procs);
+        printf("PARENT (PID: %d): \t\tKids left=%d\n", getpid(), num_alive_procs);
     }
 
-    fprintf(stderr, "PARENT (PID=%d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
+    fprintf(stdout, "PARENT (PID: %d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
 
-    free(all_kids);
+    free(population);
     exit(EXIT_SUCCESS);
 }
-
-// int main() {
-//	pid_t my_pid, my_ppid;
-//	int child_index = 0;
-//    int * population = malloc(POP_SIZE * sizeof(student));
-//
-//	switch (fork()) {
-//
-//	    case -1:
-//			/* Handle error */
-//			print_error(errno);
-//			break;
-//
-//		case 0:
-//			/* Perform actions specific to child */
-//
-//            if (child_index <= POP_SIZE) {
-//                my_pid = getpid();
-//                my_ppid = getppid();
-//                printf("CHILD-%d:  PID=%d, PPID=%d\n", child_index, my_pid, my_ppid);
-//
-//                population[child_index] = getpid();
-//
-//                child_index++;
-//                break;
-//            }
-//            // signal "start" -> search_mate
-//            printf("All child created"); // debug
-//            break;
-//
-//		default:
-//			/* Perform actions specific to parent */
-//			my_pid = getpid();
-//			my_ppid = getppid();
-//			printf("PARENT: PID=%d, PPID=%d", my_pid, my_ppid);
-//            printf("\nchild ended work\n");
-//			break;
-//		}
-//		/* Both child and parent process will execute here!! */
-//
-//		printf("COMMON AREA PID: %d\n", getpid());
-//
-//        free(population);
-//		exit(EXIT_SUCCESS);
-// }
 
 

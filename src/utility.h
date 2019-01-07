@@ -1,7 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
-
-#define POP_SIZE 4
+#ifndef UTILITY_H
+#define UTILITY_H
 
 #include <unistd.h>
 #include <stdio.h>
@@ -18,14 +16,15 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
-/* student.c */
-int get_random_mark();
-
-/* utility.c */
 int msg_queue_id;
 
 // It prints the error to stderr.
 int print_error(int en);
+
+// It returns a random number in the specified range.
+// Seed parameter can be specified, otherwise,
+// it's set to the utility process pid.
+int random_between(pid_t seed, int min, int max);
 
 // It initializes the common message queue for all the processes.
 void init_msg_queue();
@@ -33,4 +32,4 @@ void init_msg_queue();
 // It deallocates all the IPC allocated before.
 void deallocate_IPCs();
 
-#endif // COMMON_H
+#endif /* UTILITY_H */
