@@ -18,11 +18,14 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
-/* Utility.c */
+/* student.c */
+int get_random_mark();
+
+/* utility.c */
 int msg_queue_id;
 
 // It prints the error to stderr.
-void print_error(int en);
+int print_error(int en);
 
 // It initializes the common message queue for all the processes.
 void init_msg_queue();

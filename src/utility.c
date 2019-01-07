@@ -1,7 +1,8 @@
 #include "common.h"
 
-void print_error(int en){
+int print_error(int en){
     fprintf(stderr,"Error #%03d: %s\n", en, strerror(en));
+    return en;
 }
 
 void init_msg_queue(){
