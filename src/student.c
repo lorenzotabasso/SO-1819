@@ -11,7 +11,7 @@ void set_ade_mark(student stud, int new_ade_mark){
 
 void set_rand_ade_mark(student stud){
     stud.ade_mark = random_between(getpid(), 18, 30);
-    printf("Mark: %d", stud.ade_mark);
+    printf("Mark: %d", stud.ade_mark); // debug
 }
 
 void set_nof_elem(student stud, int new_nof_elem) {
