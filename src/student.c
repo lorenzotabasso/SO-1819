@@ -1,42 +1,22 @@
 #include "student.h"
 #include "utility.h"
 
-void setup(student stud){
-    set_rand_ade_mark(stud);
+struct stud {
+    int id;
+    int ade_mark;
+    int nof_elem;
+    int ask;
+    int nof_invites;
+    int max_reject;
+    int final_mark;
+} student;
+
+void set_rand_ade_mark(){
+    student.ade_mark = random_between(getpid(), 18, 30);
 }
 
-int get_ade_mark(student stud){
-    return stud.ade_mark;
-}
-
-void set_id(student stud, int new_id){
-    stud.id = new_id;
-}
-
-void set_ade_mark(student stud, int new_ade_mark){
-    stud.ade_mark = new_ade_mark;
-}
-
-void set_rand_ade_mark(student stud){
-    stud.ade_mark = random_between(getpid(), 18, 30);
-    printf("Mark: %d\t", stud.ade_mark); // debug
-    printf("PPID: %d\n", getppid()); // debug
-}
-
-void set_nof_elem(student stud, int new_nof_elem) {
-    stud.ade_mark = new_nof_elem;
-}
-
-void set_ask(student stud, int new_ask) {
-    stud.ask = new_ask;
-}
-
-void set_nof_invites(student stud, int new_nof_invites) {
-    stud.nof_invites = new_nof_invites;
-}
-
-void set_max_reject(student stud, int new_max_reject) {
-    stud.max_reject = new_max_reject;
+int get_ade_mark(){
+    return student.ade_mark;
 }
 
 void read_conf(char * config_path){
