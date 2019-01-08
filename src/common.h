@@ -1,5 +1,7 @@
-#ifndef UTILITY_H
-#define UTILITY_H
+#ifndef COMMON_H
+#define COMMON_H
+
+#define POP_SIZE 4
 
 #include <unistd.h>
 #include <stdio.h>
@@ -18,8 +20,24 @@
 
 int msg_queue_id;
 
+/* config settings */
+int sim_time;
+int dev_preference_2;
+int dev_preference_3;
+int dev_preference_4;
+int nof_invites;
+int max_reject;
+
+/* student.c */
+void set_rand_ade_mark();
+int get_ade_mark();
+void read_conf(char * conf_path);
+void find_mates();
+
+
+/* utility.c */
 // It prints the error to stderr.
-int print_error(int en);
+int print_error(char* from, int en);
 
 // It returns a random number in the specified range.
 // Seed parameter can be specified, otherwise,
@@ -32,4 +50,4 @@ void init_msg_queue();
 // It deallocates all the IPC allocated before.
 void deallocate_IPCs();
 
-#endif /* UTILITY_H */
+#endif // COMMON_H
