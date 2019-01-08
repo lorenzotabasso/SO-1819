@@ -17,6 +17,7 @@ bin/manager: build/manager.o build/utility.o
 	$(CC) -o bin/manager build/manager.o build/utility.o
 
 all: bin/manager
+	./bin/manager
 
 clean:
 	rm -f build/* bin/*

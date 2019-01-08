@@ -14,10 +14,6 @@ void set_rand_ade_mark(){
     student.ade_mark = random_between(getpid(), 18, 30);
 }
 
-int get_ade_mark(){
-    return student.ade_mark;
-}
-
 void find_mates(){
 
 }

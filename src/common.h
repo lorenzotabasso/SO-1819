@@ -33,7 +33,6 @@ pid_t population[POP_SIZE];
 
 /* student.c */
 void set_rand_ade_mark();
-int get_ade_mark();
 void read_conf(char * conf_path);
 void find_mates();
 

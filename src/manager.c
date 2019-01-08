@@ -17,12 +17,14 @@ int main (int argc, char * argv[]) {
                 exit(EXIT_FAILURE);
             case 0:
                 /* CHILD CODE */
-                execve("src/student.c", argv, NULL);
-                //printf("STUDENT (PID: %d): I'm Stud number %d, ADE_Mark: %d\n", getpid(), num_alive_procs, get_ade_mark());
+                //execve("src/student.c", argv, NULL);
+                printf("STUDENT (PID: %d): hi! I'm working!\n", getpid());
+                exit(EXIT_SUCCESS);
                 break;
             default:
                 /* PARENT CODE */
                 printf("PARENT (PID: %d): created child.\n", getpid());
+                wait(0);
                 break;
         }
     }
@@ -31,33 +33,7 @@ int main (int argc, char * argv[]) {
 
     /* checking if any child proc terminated, stopped or continued */
 
-   /* wait for any child process ("-1" = wait all)*/
-//    while ((child_pid = waitpid(-1, &status, WUNTRACED | WCONTINUED)) != -1) {
-//
-//        printf("PARENT (PID: %d): Got info from child with PID=%d. Status 0x%04X\n", getpid(), child_pid, status);
-//
-//        /* Checking the status */
-//        if (WIFEXITED(status)) {
-//            /* the child proc exited, must decrement num_alive_procs */
-//            printf("\tchild correctly exited with status %d\n", WEXITSTATUS(status));
-//            num_alive_procs--;
-//        }
-//        if (WIFSIGNALED(status)) {
-//            /* the child proc terminated by signal, must decrement num_alive_procs */
-//            printf("\tchild terminated by the signal %d\n", WTERMSIG(status));
-//            num_alive_procs--;
-//        }
-//        if (WIFSTOPPED(status)) {
-//            printf("\tchild stopped by the signal %d\n", WSTOPSIG(status));
-//        }
-//        if (WIFCONTINUED(status)) {
-//            printf("\tchild continued after being stopped\n");
-//        }
-//
-//        printf("PARENT (PID: %d): \t\tKids left=%d\n", getpid(), num_alive_procs);
-//    }
-
-    fprintf(stdout, "PARENT (PID: %d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
+    fprintf(stdout, "PARENT (PID: %d): done with waiting\n", getpid());
 
     //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
     deallocate_IPCs();
