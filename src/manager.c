@@ -1,38 +1,31 @@
 #include "common.h"
 
 int main (int argc, char * argv[]) {
-    int num_alive_procs;
-    pid_t child_pid, * population;
 
+    /* Init sim_parameters */
     init_msg_queue();
-
-    /* vector of kids PIDs */
-    population = malloc(POP_SIZE * sizeof(* population));
+    read_conf("/Volumes/HDD/Lorenzo/Unito/2 Anno/SO/Progetto/Progetto 2018-2019/so-18-19/src/opt.conf");
+    //start_timer();
 
     printf("PARENT (PID: %d): creating %d child processes\n", getpid(), POP_SIZE);
 
-    for (num_alive_procs = 0; num_alive_procs < POP_SIZE; num_alive_procs++) {
-        switch (child_pid = fork()) {
+    for (int i = 0; i< POP_SIZE; i++) {
+        switch (population[i] = fork()) {
             case -1:
                 /* Handle error */
-                print_error("Student", errno);
+                print_error("Manager", errno);
                 exit(EXIT_FAILURE);
             case 0:
                 /* CHILD CODE */
-                execv("src/student.c", NULL);
-                set_rand_ade_mark();
-                printf("STUDENT (PID: %d): I'm Stud number %d, ADE_Mark: %d\n", getpid(), num_alive_procs, get_ade_mark());
-
+                execve("src/student.c", argv, NULL);
+                //printf("STUDENT (PID: %d): I'm Stud number %d, ADE_Mark: %d\n", getpid(), num_alive_procs, get_ade_mark());
                 break;
             default:
                 /* PARENT CODE */
-                printf("PARENT (PID: %d): created child (PID: %d)\n", getpid(), population[num_alive_procs] = child_pid);
+                printf("PARENT (PID: %d): created child.\n", getpid());
                 break;
         }
     }
-
-    // TODO: only for debug, to move in other line
-    read_conf("/Volumes/HDD/Lorenzo/Unito/2 Anno/SO/Progetto/Progetto 2018-2019/so-18-19/src/opt.conf");
 
     /* PARENT CODE: the child processes exited already */
 
@@ -66,8 +59,9 @@ int main (int argc, char * argv[]) {
 
     fprintf(stdout, "PARENT (PID: %d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
 
+    //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
     deallocate_IPCs();
-    free(population);
+
     exit(EXIT_SUCCESS);
 }
 

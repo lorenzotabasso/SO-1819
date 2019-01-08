@@ -28,6 +28,9 @@ int dev_preference_4;
 int nof_invites;
 int max_reject;
 
+/* vector of kids PIDs */
+pid_t population[POP_SIZE];
+
 /* student.c */
 void set_rand_ade_mark();
 int get_ade_mark();
@@ -46,6 +49,9 @@ int random_between(pid_t seed, int min, int max);
 
 // It initializes the common message queue for all the processes.
 void init_msg_queue();
+
+void start_timer();
+void stop_timer();
 
 // It deallocates all the IPC allocated before.
 void deallocate_IPCs();
