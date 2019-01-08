@@ -1,6 +1,14 @@
 #include "student.h"
 #include "utility.h"
 
+void setup(student stud){
+    set_rand_ade_mark(stud);
+}
+
+int get_ade_mark(student stud){
+    return stud.ade_mark;
+}
+
 void set_id(student stud, int new_id){
     stud.id = new_id;
 }
@@ -11,7 +19,8 @@ void set_ade_mark(student stud, int new_ade_mark){
 
 void set_rand_ade_mark(student stud){
     stud.ade_mark = random_between(getpid(), 18, 30);
-    printf("Mark: %d", stud.ade_mark); // debug
+    printf("Mark: %d\t", stud.ade_mark); // debug
+    printf("PPID: %d\n", getppid()); // debug
 }
 
 void set_nof_elem(student stud, int new_nof_elem) {

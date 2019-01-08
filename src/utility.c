@@ -6,7 +6,7 @@ int print_error(int en){
 }
 
 int random_between(pid_t seed, int min, int max) {
-    if (seed != 1) {
+    if (seed) {
         srand((unsigned) seed); // pid of the calling process
     } else {
         srand((unsigned) getpid()); // pid of this process

@@ -6,7 +6,7 @@ int main (int argc, char * argv[]) {
     int num_alive_procs;
     pid_t child_pid, * population;
     int status;
-    student stud = {.ade_mark=0, .max_reject=0, .nof_invites=0, .ask=0, .id=0, .final_mark=0, .nof_elem=0};
+    student stud /*= {.ade_mark=0, .max_reject=0, .nof_invites=0, .ask=0, .id=0, .final_mark=0, .nof_elem=0}*/;
 
     /* vector of kids PIDs */
     population = malloc(POP_SIZE * sizeof(* population));
@@ -23,7 +23,6 @@ int main (int argc, char * argv[]) {
                 /* CHILD CODE */
                 set_rand_ade_mark(stud);
                 printf("STUDENT (PID: %d): I'm Stud number %d, ADE_Mark: %d\n", getpid(), num_alive_procs, stud.ade_mark);
-
                 exit(num_alive_procs);
                 break;
             default:

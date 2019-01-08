@@ -33,6 +33,9 @@ int dev_preference_3;
 int dev_preference_4;
 int max_reject;
 
+void setup(student stud);
+
+int get_ade_mark(student stud);
 
 /* Getter and setters */
 void set_id(student stud, int new_id);
