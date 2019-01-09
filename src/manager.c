@@ -17,7 +17,7 @@ int main (int argc, char * argv[]) {
                 exit(EXIT_FAILURE);
             case 0:
                 /* CHILD CODE */
-                execve("student.c", argv, NULL);
+                execve("student", argv, NULL);
                 //printf("STUDENT (PID: %d): hi! I'm working!\n", getpid());
                 //exit(EXIT_SUCCESS);
                 
