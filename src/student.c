@@ -25,9 +25,16 @@ void goodbye(){
 }
 
 int main(int argc, char * argv[]) {
-    //set_rand_ade_mark();
+    set_rand_ade_mark();
     printf("CHILD (PID: %d): Hi! I'm working! ADE_Mark: %d\n", getpid(), student.ade_mark);
-    //exit(EXIT_SUCCESS);
+
+    // pause();
+
+    // while(1){
+        
+    // }
+    
+    exit(EXIT_SUCCESS);
 
     //signal(SIGCONT, goodbye); // DECOMMENT ONLY AT THE END
 }

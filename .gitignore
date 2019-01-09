@@ -63,3 +63,5 @@ cmake-build-debug/
 .idea/
 
 src/*.o
+src/manager
+src/student

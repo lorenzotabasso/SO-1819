@@ -3,9 +3,9 @@
 int main (int argc, char * argv[]) {
 
     /* Init sim_parameters */
-    //init_msg_queue();
-    //read_conf("opt.conf");
-    //start_timer();
+    init_msg_queue();
+    read_conf("opt.conf");
+    start_timer();
 
     printf("PARENT (PID: %d): creating %d child processes\n", getpid(), POP_SIZE);
 
@@ -18,7 +18,7 @@ int main (int argc, char * argv[]) {
             case 0:
                 /* CHILD CODE */
                 execve("student", argv, NULL);
-                //printf("STUDENT (PID: %d): hi! I'm working!\n", getpid());
+                
                 //exit(EXIT_SUCCESS);
                 
             default:
@@ -27,19 +27,20 @@ int main (int argc, char * argv[]) {
                
         }
     }
-    for(int i= 0; i<POP_SIZE;i++)
-		wait(0);
 
     /* PARENT CODE: the child processes exited already */
-
     /* checking if any child proc terminated, stopped or continued */
 
-    //fprintf(stdout, "PARENT (PID: %d): done with waiting\n", getpid());
+    signal(SIGUSR1, stop_timer); // SIGALRM handler, it stops the timer.
 
-    //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
-    //deallocate_IPCs();
+    printf("PARENT (PID: %d): done with waiting\n", getpid());
+
+    signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
+    deallocate_IPCs();
 
     exit(EXIT_SUCCESS);
 }
+
+void
 
 
