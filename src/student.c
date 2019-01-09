@@ -27,7 +27,7 @@ void goodbye(){
 }
 
 int main(int argc, char * argv[]) {
-    sa.__sigaction_u.__sa_handler = handle_signal;
+    sa.sa_handler = handle_signal;
     sa.sa_flags = 0;
 
     set_rand_ade_mark();
