@@ -1,39 +1,16 @@
-# Compiler's Flags
-# CFLAGS = -g -Wall -Wpedantic
+# PROFESIONAL MAKEFILE
 
-# build/student.o: src/student.c src/utility.c src/common.h Makefile
-# 	$(CC) $(CFLAGS) -c src/student.c -o build/student.o
+Progetto: build/manager.o build/student.o build/utility.o 
+	./bin/manager
 
-# build/manager.o: src/manager.c src/utility.c src/common.h Makefile
-# 	$(CC) $(CFLAGS) -c src/manager.c -o build/manager.o
+build/utility.o: src/utility.c src/common.h
+	gcc -c src/utility.c -o build/utility.o
 
-# build/utility.o: src/utility.c src/common.h Makefile
-# 	$(CC) $(CFLAGS) -c src/utility.c -o build/utility.o
+build/manager.o: src/manager.c src/common.h build/utility.o
+	gcc -Wall src/manager.c build/utility.o -o bin/manager
 
-# #bin/manager: build/student.o src/utility.o build/manager.o build/utility.o
-# #	$(CC) -o bin/manager build/student.o build/manager.o build/utility.o
+build/student.o: src/student.c src/common.h build/utility.o
+	gcc -Wall src/student.c build/utility.o -o bin/student 
 
-# bin/manager: build/manager.o build/utility.o
-# 	$(CC) -o bin/manager build/manager.o build/utility.o
-
-# bin/student: build/student.o build/utility.o bin/student
-
-# all: bin/manager
-# 	./bin/manager
-
-# clean:
-# 	rm -f build/* bin/*
-
-Progetto: build/manager.o build/student.o build/utility.o bin/manager
-    ./bin/manager
-
-manager.o: src/manager.c src/common.h src/utility.o
-    gcc -Wall manager.c -o manager utility.o
-
-    student.o: student.c  common.h utility.o
-    	gcc -Wall student.c -o student utility.o
-
-    utility.o: utility.c
-    	gcc -c utility.c
-
-
+clean:
+	rm -f build/* bin/*
