@@ -16,6 +16,8 @@ build/utility.o: src/utility.c src/common.h Makefile
 bin/manager: build/manager.o build/utility.o
 	$(CC) -o bin/manager build/manager.o build/utility.o
 
+bin/student: build/student.o build/utility.o bin/student
+
 all: bin/manager
 	./bin/manager
 

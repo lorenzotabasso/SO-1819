@@ -26,6 +26,7 @@ void init_msg_queue(){
 //    alarm((unsigned int) sim_time);
 //}
 //
+
 //void stop_timer() {
 //    sleep(1);
 //    printf("Timeout!\n\n");
@@ -34,7 +35,7 @@ void init_msg_queue(){
 
 void deallocate_IPCs(){
     if (msgctl(msg_queue_id, IPC_RMID, NULL) == -1){
-        print_error("Student", errno);
+        print_error("Manager", errno);
     }
 //    if (semctl(semaforoPalla, 0, IPC_RMID) == -1){
 //        Error();
@@ -59,10 +60,10 @@ void read_conf(char * config_path){
 
     fgets(line, max, config_fp);
     if (sscanf(line, "sim_time = %d", &sim_time) != 1) {
-        print_error("Student", errno);
+        print_error("Manager", errno);
     } else {
         if (sim_time < 0){
-            print_error("Student", errno);
+            print_error("Manager", errno);
         } else {
             printf ("sim_time setted to: %d\n", sim_time);
         }
@@ -70,10 +71,10 @@ void read_conf(char * config_path){
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_2 = %d", &dev_preference_2) != 1) {
-        print_error("Student", errno);
+        print_error("Manager", errno);
     } else {
         if (sim_time < 0){
-            print_error("Student", errno);
+            print_error("Manager", errno);
         } else {
             printf ("dev_preference_2 setted to: %d\n", dev_preference_2);
         }
@@ -81,10 +82,10 @@ void read_conf(char * config_path){
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_3 = %d", &dev_preference_3) != 1) {
-        print_error("Student", errno);
+        print_error("Manager", errno);
     } else {
         if (sim_time < 0){
-            print_error("Student", errno);
+            print_error("Manager", errno);
         } else {
             printf ("dev_preference_3 setted to: %d\n", dev_preference_3);
         }
@@ -92,10 +93,10 @@ void read_conf(char * config_path){
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_4 = %d", &dev_preference_4) != 1) {
-        print_error("Student", errno);
+        print_error("Manager", errno);
     } else {
         if (sim_time < 0){
-            print_error("Student", errno);
+            print_error("Manager", errno);
         } else {
             printf ("dev_preference_4 setted to: %d\n", dev_preference_4);
         }
@@ -103,10 +104,10 @@ void read_conf(char * config_path){
 
     fgets(line, max, config_fp);
     if (sscanf(line, "nof_invites = %d", &nof_invites) != 1) {
-        print_error("Student", errno);
+        print_error("Manager", errno);
     } else {
         if (sim_time < 0){
-            print_error("Student", errno);
+            print_error("Manager", errno);
         } else {
             printf ("nof_invites setted to: %d\n", nof_invites);
         }
@@ -114,10 +115,10 @@ void read_conf(char * config_path){
 
     fgets(line, max, config_fp);
     if (sscanf(line, "max_reject = %d", &max_reject) != 1) {
-        print_error("Student", errno);
+        print_error("Manager", errno);
     } else {
         if (sim_time < 0){
-            print_error("Student", errno);
+            print_error("Manager", errno);
         } else {
             printf ("max_reject setted to: %d\n", max_reject);
         }
