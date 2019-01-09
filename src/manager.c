@@ -13,7 +13,7 @@ int main (int argc, char * argv[]) {
         switch (population[i] = fork()) {
             case -1:
                 /* Handle error */
-                print_error("Manager", errno);
+                print_error("Manager, Creating child processes", errno);
                 exit(EXIT_FAILURE);
             case 0:
                 /* CHILD CODE */
@@ -36,9 +36,9 @@ int main (int argc, char * argv[]) {
     }
     printf("\n");
 
-    for(int i = 0; i < POP_SIZE; i++) {
-        wait(0);
-    }
+    // for(int i = 0; i < POP_SIZE; i++) {
+    //     wait(0);
+    // }
 
     printf("PARENT (PID: %d): done with waiting\n", getpid());
 

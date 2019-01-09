@@ -17,7 +17,7 @@ int random_between(pid_t seed, int min, int max) {
 void init_msg_queue(){
     msg_queue_id = msgget(IPC_PRIVATE, 0400 | 0200);
     if (msg_queue_id == -1) {
-        print_error("Manager", errno);
+        print_error("Manager, init_msg_queue", errno);
     }
     printf("Created message queue with ID: %d\n", msg_queue_id);
 }
@@ -34,7 +34,7 @@ void stop_timer() {
 
 void deallocate_IPCs(){
     if (msgctl(msg_queue_id, IPC_RMID, NULL) == -1){
-        print_error("Manager", errno);
+        print_error("Manager, deallocate_IPCs", errno);
     }
 //    if (semctl(semaforoPalla, 0, IPC_RMID) == -1){
 //        Error();
@@ -54,54 +54,54 @@ void read_conf(char * config_path){
     FILE *config_fp = fopen(config_path, "r");
 
     if (config_fp == NULL){
-        print_error("Student", errno);
+        print_error("Manager, read_conf", errno);
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "sim_time = %d", &sim_time) != 1) {
-        print_error("Manager", errno);
+        print_error("Manager, read_conf", errno);
     } else {
         if (sim_time < 0)
-            print_error("Manager", errno);
+            print_error("Manager, read_conf", errno);
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_2 = %d", &dev_preference_2) != 1) {
-        print_error("Manager", errno);
+        print_error("Manager, read_conf", errno);
     } else {
         if (sim_time < 0)
-            print_error("Manager", errno);
+            print_error("Manager, read_conf", errno);
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_3 = %d", &dev_preference_3) != 1) {
-        print_error("Manager", errno);
+        print_error("Manager, read_conf", errno);
     } else {
         if (sim_time < 0)
-            print_error("Manager", errno);
+            print_error("Manager, read_conf", errno);
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_4 = %d", &dev_preference_4) != 1) {
-        print_error("Manager", errno);
+        print_error("Manager, read_conf", errno);
     } else {
         if (sim_time < 0)
-            print_error("Manager", errno);
+            print_error("Manager, read_conf", errno);
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "nof_invites = %d", &nof_invites) != 1) {
-        print_error("Manager", errno);
+        print_error("Manager, read_conf", errno);
     } else {
         if (sim_time < 0)
-            print_error("Manager", errno);
+            print_error("Manager, read_conf", errno);
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "max_reject = %d", &max_reject) != 1) {
-        print_error("Manager", errno);
+        print_error("Manager, read_conf", errno);
     } else {
         if (sim_time < 0)
-            print_error("Manager", errno);
+            print_error("Manager, read_conf", errno);
     }
 }
