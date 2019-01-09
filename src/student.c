@@ -26,13 +26,13 @@ void goodbye(){
 
 int main(int argc, char * argv[]) {
     set_rand_ade_mark();
-    printf("CHILD (PID: %d): Hi! I'm working! ADE_Mark: %d\n", getpid(), student.ade_mark);
+    printf("CHILD");
+    pause();
 
-    // pause();
-
-    // while(1){
-        
-    // }
+    while(1) {
+        //sleep(1);
+        printf("CHILD (PID: %d): Hi! I'm working! ADE_Mark: %d\n", getpid(), student.ade_mark);
+    }
     
     exit(EXIT_SUCCESS);
 
