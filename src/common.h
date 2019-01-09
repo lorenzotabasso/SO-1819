@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define POP_SIZE 4
+#define POP_SIZE 1
 
 #include <unistd.h>
 #include <stdio.h>
@@ -35,6 +35,7 @@ pid_t population[POP_SIZE];
 void set_rand_ade_mark();
 void read_conf(char * conf_path);
 void find_mates();
+void handle_signal(int signal);
 
 /* utility.c */
 // It prints the error to stderr.
