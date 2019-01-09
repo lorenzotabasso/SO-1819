@@ -61,3 +61,5 @@ $RECYCLE.BIN/
 CMakeLists.txt
 cmake-build-debug/
 .idea/
+
+src/*.o
