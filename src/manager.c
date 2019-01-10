@@ -4,6 +4,7 @@ int main (int argc, char * argv[]) {
     int status;
     pid_t child_pid;
     int num_alive_procs = POP_SIZE;
+	init_children_semaphore(key_children_semaphore);
 
     /* Init sim_parameters */
     //init_msg_queue();
@@ -25,15 +26,21 @@ int main (int argc, char * argv[]) {
 		default:
 			/* PARENT CODE */
 			printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), population[i]);
+			
+			int test = semctl(children_semaphore_id, 0, GETVAL);
+			printf("PARENT (PID=%d): %d\n", getpid(), test);
+			if (test == 0) {
+				for(int i = 0; i < POP_SIZE; i++) {
+					printf("PARENT, sending signal\n");
+					kill(population[i], SIGCONT);
+				}
+			}
 			break;
 		}
 	}
 	
-	/* PARENT CODE: the child processes exited already */
-	
+	/* PARENT CODE: the child processes exited already */	
 	/* checking if any child proc terminated, stopped or continued */
-
-    kill(0, SIGCONT);
 
    /* wait for any child process */
 	while ((child_pid = waitpid(-1,&status,WUNTRACED | WCONTINUED)) != -1) {

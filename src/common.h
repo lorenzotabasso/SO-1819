@@ -1,7 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define POP_SIZE 1
+#define POP_SIZE 3
+#define DEBUG 0
 
 #include <unistd.h>
 #include <stdio.h>
@@ -18,7 +19,21 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#if defined(__linux__)
+    union semun {
+        int val;
+        struct semid_ds *buf;
+        unsigned short  *array;
+        #if defined(__linux__)
+            struct seminfo* __buf;
+        #endif
+    };
+#endif
+
+#define key_children_semaphore 1
+
 int msg_queue_id;
+int children_semaphore_id;
 
 /* config settings */
 int sim_time;
@@ -48,6 +63,9 @@ int random_between(pid_t seed, int min, int max);
 
 // It initializes the common message queue for all the processes.
 void init_msg_queue();
+void init_children_semaphore (int semID);
+int request_resource(int sem_id, int quantity);
+void relase_resource(int sem_id, int quantity);
 
 void start_timer();
 void stop_timer();

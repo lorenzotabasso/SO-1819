@@ -22,6 +22,38 @@ void init_msg_queue(){
     printf("Created message queue with ID: %d\n", msg_queue_id);
 }
 
+void init_children_semaphore (int semID){
+	children_semaphore_id = semget(semID, 1, IPC_CREAT | 0666);
+	if (children_semaphore_id == -1) {
+		print_error("Manager, initChildrenSemaphore - 1", errno);
+	}
+	if (semctl(children_semaphore_id, 0, SETVAL, POP_SIZE) == -1) {
+		print_error("Manager, initChildrenSemaphore - 2", errno);
+	}
+	printf("Created Children Semaphore and initialized. ID=%d\n", children_semaphore_id);
+}
+
+int request_resource(int sem_id, int quantity) {
+    printf("requested resource: %d\n", quantity);
+    struct sembuf lock = {0, quantity, IPC_NOWAIT};
+    int ret = semop(sem_id, &lock, 1);
+    
+    if (ret == -1) {
+        print_error("Error in request_resource", errno);
+    } else {
+        return ret;
+    }
+    
+}
+
+void relase_resource(int sem_id, int quantity) {
+    printf("relased resource: %d\n", quantity);
+    struct sembuf unlock = {0, quantity, 0};
+    if (semop(sem_id, &unlock, 1) == -1) {
+		print_error("Not know, relaseResource", errno);
+    }
+}
+
 void start_timer(){
     alarm((unsigned int) sim_time);
 }
@@ -34,11 +66,11 @@ void stop_timer() {
 
 void deallocate_IPCs(){
     if (msgctl(msg_queue_id, IPC_RMID, NULL) == -1){
-        print_error("Manager, deallocate_IPCs", errno);
+        print_error("Manager, deallocate_IPCs - 1", errno);
     }
-//    if (semctl(semaforoPalla, 0, IPC_RMID) == -1){
-//        Error();
-//    }
+   if (semctl(children_semaphore_id, 0, IPC_RMID) == -1){
+       print_error("Manager, deallocate_IPCs - 2", errno);
+   }
 //    if (semctl(setSemaforiSquadre, 1, IPC_RMID) == -1){
 //        Error();
 //    }
