@@ -22,7 +22,7 @@ int main (int argc, char * argv[]) {
 			/* CHILD CODE */
 			execve("bin/student", argv, NULL);
 			//exit(i);
-			break;
+			
 		default:
 			/* PARENT CODE */
 			printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), population[i]);
@@ -35,7 +35,7 @@ int main (int argc, char * argv[]) {
 					kill(population[i], SIGCONT);
 				}
 			}
-			break;
+			
 		}
 	}
 	
