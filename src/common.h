@@ -46,6 +46,14 @@ int max_reject;
 /* vector of kids PIDs */
 pid_t population[POP_SIZE];
 
+#define TEST_ERROR    if (errno) {fprintf(stderr,			\
+					  "%s:%d: PID=%5d: Error %d (%s)\n", \
+					  __FILE__,			\
+					  __LINE__,			\
+					  getpid(),			\
+					  errno,			\
+					  strerror(errno));}
+
 /* student.c */
 void set_rand_ade_mark();
 void handle_signal(int signal);

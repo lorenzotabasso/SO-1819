@@ -22,6 +22,35 @@ void init_msg_queue(){
     printf("Created message queue with ID: %d\n", msg_queue_id);
 }
 
+void send_message(int queue_id, message to_send) {
+	if (msgsnd(queue_id, &to_send, sizeof(to_send)-sizeof(long), 0) == -1) {
+		TEST_ERROR;
+	}
+}
+
+void receive_message(int queue_id) {
+	struct message my_msg
+	if (msgrcv(queue_id, &my_msg, sizeof(my_msg)-sizeof(long), 0, 0) == -1) {
+		/* msgrcv failed!! */
+		if (errno == EIDRM) {
+			/* 
+			 * La  coda  e` stata  cancellata  dal
+			 * processo che ha trovato l'elenco di
+			 * records pieno. Dobbiamo uscire.
+			 */
+			return 0;
+		} else {
+			/* Altri errori: inaspettato.
+			 * Se accade dobbiamo approfondire
+			 */
+			TEST_ERROR;
+			return 0;
+		}
+	}
+	
+	// File: test-msg-start e test-rcv-snd
+}
+
 void init_children_semaphore (int key_sem){
 	children_semaphore_id = semget(key_sem, 1, IPC_CREAT | 0666);
 	if (children_semaphore_id == -1) {
@@ -140,4 +169,5 @@ void read_conf(char * config_path){
         if (sim_time < 0)
             print_error("Manager, read_conf", errno);
     }
+    printf("Config loaded.\n");
 }

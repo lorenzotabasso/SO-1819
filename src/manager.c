@@ -4,11 +4,11 @@ int main (int argc, char * argv[]) {
     int status;
     pid_t child_pid;
     int num_alive_procs = POP_SIZE;
-	init_children_semaphore(key_children_semaphore);
 
     /* Init sim_parameters */
-    //init_msg_queue();
-    //read_conf("src/opt.conf");
+    read_conf("src/opt.conf");
+    init_children_semaphore(key_children_semaphore);
+    init_msg_queue();
     //start_timer();
 
     printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
@@ -65,7 +65,7 @@ int main (int argc, char * argv[]) {
 	fprintf(stderr, "PARENT (PID=%d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
 
     //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
-    //deallocate_IPCs();
+    deallocate_IPCs();
 
     exit(EXIT_SUCCESS);
 }

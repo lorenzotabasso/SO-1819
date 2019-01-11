@@ -8,6 +8,7 @@ struct stud {
     int nof_invites;
     int max_reject;
     int final_mark;
+    int grouped;
 } student;
 
 struct sigaction sa;
