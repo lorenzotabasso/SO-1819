@@ -22,8 +22,8 @@ void init_msg_queue(){
     printf("Created message queue with ID: %d\n", msg_queue_id);
 }
 
-void init_children_semaphore (int semID){
-	children_semaphore_id = semget(semID, 1, IPC_CREAT | 0666);
+void init_children_semaphore (int key_sem){
+	children_semaphore_id = semget(key_sem, 1, IPC_CREAT | 0666);
 	if (children_semaphore_id == -1) {
 		print_error("Manager, initChildrenSemaphore - 1", errno);
 	}
@@ -33,25 +33,36 @@ void init_children_semaphore (int semID){
 	printf("Created Children Semaphore and initialized. ID=%d\n", children_semaphore_id);
 }
 
-int request_resource(int sem_id, int quantity) {
-    printf("requested resource: %d\n", quantity);
-    struct sembuf lock = {0, quantity, IPC_NOWAIT};
+int request_resource(int sem_id, int sem_num) {
+    printf("requested resource\n");
+    struct sembuf lock;
+    lock.sem_num = sem_num;
+    lock.sem_op=-1;
+    lock.sem_flg=0;
     int ret = semop(sem_id, &lock, 1);
     
-    if (ret == -1) {
+    if (ret == -1) 
         print_error("Error in request_resource", errno);
-    } else {
+    
+    else 
         return ret;
-    }
     
 }
 
-void relase_resource(int sem_id, int quantity) {
-    printf("relased resource: %d\n", quantity);
-    struct sembuf unlock = {0, quantity, 0};
-    if (semop(sem_id, &unlock, 1) == -1) {
-		print_error("Not know, relaseResource", errno);
-    }
+int relase_resource(int sem_id, int sem_num) {
+   printf("release resource\n");
+    struct sembuf lock;
+    lock.sem_num = sem_num;
+    lock.sem_op=1;
+    lock.sem_flg=0;
+    int ret = semop(sem_id, &lock, 1);
+    
+    if (ret == -1) 
+        print_error("Error in release_resource", errno);
+    
+    else 
+        return ret;
+    
 }
 
 void start_timer(){

@@ -63,9 +63,9 @@ int random_between(pid_t seed, int min, int max);
 
 // It initializes the common message queue for all the processes.
 void init_msg_queue();
-void init_children_semaphore (int semID);
-int request_resource(int sem_id, int quantity);
-void relase_resource(int sem_id, int quantity);
+void init_children_semaphore (int key_sem);
+int request_resource(int sem_id, int sem_num);
+int relase_resource(int sem_id, int sem_num);
 
 void start_timer();
 void stop_timer();

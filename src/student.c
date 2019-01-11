@@ -41,7 +41,7 @@ int main(int argc, char * argv[]) {
 	// 	// }
 	// }
     
-    int test1 = request_resource(children_semaphore_id, 1);
+    int test1 = request_resource(children_semaphore_id, 0);
     int test2 = semctl(children_semaphore_id, 0, GETVAL);
     
     if (test1 == -1) {
