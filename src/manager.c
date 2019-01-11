@@ -14,34 +14,30 @@ int main (int argc, char * argv[]) {
     printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
 	for (int i=0; i < POP_SIZE; i++) {
 		switch (population[i] = fork()) {
-		case -1:
-			/* Handle error */
-            print_error("manager, creating children", errno);
-			exit(EXIT_FAILURE);
-		case 0:
-			/* CHILD CODE */
-			execve("bin/student", argv, NULL);
-			//exit(i);
-			
-		default:
-			/* PARENT CODE */
-			printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), population[i]);
-			
-			int test = semctl(children_semaphore_id, 0, GETVAL);
-			printf("PARENT (PID=%d): %d\n", getpid(), test);
-			if (test == 0) {
-				for(int i = 0; i < POP_SIZE; i++) {
-					printf("PARENT, sending signal\n");
-					kill(population[i], SIGCONT);
-				}
-			}
-			
+			case -1:
+				/* Handle error */
+				print_error("manager, creating children", errno);
+				exit(EXIT_FAILURE);
+			case 0:
+				/* CHILD CODE */
+				execve("bin/student", argv, NULL);
+				
+			default:
+				/* PARENT CODE */
+				printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), population[i]);		
 		}
 	}
+		
+	/* PARENT CODE: the child processes exited already */
 	
-	/* PARENT CODE: the child processes exited already */	
-	/* checking if any child proc terminated, stopped or continued */
+	/* after the creation of child, parent add POP_SIZE resource to the 
+	 * semaphore of children, in order to unblock them and to start the 
+	 * simulation
+	 */
+	for(int j = 0; j < POP_SIZE; j++)
+		relase_resource(children_semaphore_id, 0); // 0 -> the first semaphonre in the set
 
+	/* checking if any child proc terminated, stopped or continued */
    /* wait for any child process */
 	while ((child_pid = waitpid(-1,&status,WUNTRACED | WCONTINUED)) != -1) {
 		printf("PARENT (PID=%d): Got info from child with PID=%d. Status 0x%04X\n", getpid(), child_pid, status);

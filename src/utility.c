@@ -25,12 +25,12 @@ void init_msg_queue(){
 void init_children_semaphore (int key_sem){
 	children_semaphore_id = semget(key_sem, 1, IPC_CREAT | 0666);
 	if (children_semaphore_id == -1) {
-		print_error("Manager, initChildrenSemaphore - 1", errno);
+		print_error("Manager, initChildrenSemaphore - sem_ID", errno);
 	}
-	if (semctl(children_semaphore_id, 0, SETVAL, POP_SIZE) == -1) {
-		print_error("Manager, initChildrenSemaphore - 2", errno);
+	if (semctl(children_semaphore_id, 0, SETVAL, 0) == -1) {
+		print_error("Manager, initChildrenSemaphore - SEMCTL", errno);
 	}
-	printf("Created Children Semaphore and initialized. ID=%d\n", children_semaphore_id);
+	printf("Created Children Semaphore and initialized. child_sem_id=%d\n", children_semaphore_id);
 }
 
 int request_resource(int sem_id, int sem_num) {
@@ -43,26 +43,22 @@ int request_resource(int sem_id, int sem_num) {
     
     if (ret == -1) 
         print_error("Error in request_resource", errno);
-    
     else 
         return ret;
-    
 }
 
 int relase_resource(int sem_id, int sem_num) {
    printf("release resource\n");
-    struct sembuf lock;
-    lock.sem_num = sem_num;
-    lock.sem_op=1;
-    lock.sem_flg=0;
-    int ret = semop(sem_id, &lock, 1);
+    struct sembuf unlock;
+    unlock.sem_num = sem_num;
+    unlock.sem_op=1;
+    unlock.sem_flg=0;
+    int ret = semop(sem_id, &unlock, 1);
     
     if (ret == -1) 
         print_error("Error in release_resource", errno);
-    
     else 
         return ret;
-    
 }
 
 void start_timer(){
@@ -82,9 +78,6 @@ void deallocate_IPCs(){
    if (semctl(children_semaphore_id, 0, IPC_RMID) == -1){
        print_error("Manager, deallocate_IPCs - 2", errno);
    }
-//    if (semctl(setSemaforiSquadre, 1, IPC_RMID) == -1){
-//        Error();
-//    }
 //    if (shmctl(idshm, IPC_RMID, NULL) == -1) {
 //        Error();
 //    }

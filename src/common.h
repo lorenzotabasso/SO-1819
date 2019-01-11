@@ -48,29 +48,18 @@ pid_t population[POP_SIZE];
 
 /* student.c */
 void set_rand_ade_mark();
-void read_conf(char * conf_path);
-void find_mates();
 void handle_signal(int signal);
 
 /* utility.c */
-// It prints the error to stderr.
 int print_error(char* from, int en);
-
-// It returns a random number in the specified range.
-// Seed parameter can be specified, otherwise,
-// it's set to the utility process pid.
 int random_between(pid_t seed, int min, int max);
-
-// It initializes the common message queue for all the processes.
 void init_msg_queue();
 void init_children_semaphore (int key_sem);
 int request_resource(int sem_id, int sem_num);
 int relase_resource(int sem_id, int sem_num);
-
 void start_timer();
 void stop_timer();
-
-// It deallocates all the IPC allocated before.
+void read_conf(char * conf_path);
 void deallocate_IPCs();
 
 #endif // COMMON_H
