@@ -4,11 +4,17 @@ int main (int argc, char * argv[]) {
     int status;
     pid_t child_pid;
     int num_alive_procs = POP_SIZE;
+    struct shared_data * my_data; 	// pointer which will contain the memory 
+    								//address for the matrix of grouped processes
 
     /* Init sim_parameters */
     read_conf("src/opt.conf");
     init_children_semaphore(key_children_semaphore);
     init_msg_queue();
+
+	init_shared_memory(key_shared_memory, my_data);
+	my_data = shmat(shared_memory_id, NULL, 0);
+
     //start_timer();
 
     printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
@@ -24,12 +30,22 @@ int main (int argc, char * argv[]) {
 				
 			default:
 				/* PARENT CODE */
-				printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), population[i]);		
+				printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), population[i]);
 		}
 	}
 		
 	/* PARENT CODE: the child processes exited already */
 	
+	/* initializing the matrix for the shared memory, in the first column of 
+	 * the matrix will be set the PID of the processes, and in the second
+	 * column will be set the group status (1 if the student is already 
+	 * grouped, 0 otherwise)
+	 */
+	for (int i = 0; i < POP_SIZE; i++) {
+		my_data->group_matrix[i][0] = population[i];
+		my_data->group_matrix[i][1] = 0;
+	}
+
 	/* after the creation of child, parent add POP_SIZE resource to the 
 	 * semaphore of children, in order to unblock them and to start the 
 	 * simulation

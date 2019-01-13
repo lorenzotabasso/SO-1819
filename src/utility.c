@@ -22,14 +22,14 @@ void init_msg_queue(){
     printf("Created message queue with ID: %d\n", msg_queue_id);
 }
 
-void send_message(int queue_id, message to_send) {
+void send_message(int queue_id, struct message to_send) {
 	if (msgsnd(queue_id, &to_send, sizeof(to_send)-sizeof(long), 0) == -1) {
 		TEST_ERROR;
 	}
 }
 
 void receive_message(int queue_id) {
-	struct message my_msg
+	struct message my_msg;
 	if (msgrcv(queue_id, &my_msg, sizeof(my_msg)-sizeof(long), 0, 0) == -1) {
 		/* msgrcv failed!! */
 		if (errno == EIDRM) {
@@ -38,13 +38,13 @@ void receive_message(int queue_id) {
 			 * processo che ha trovato l'elenco di
 			 * records pieno. Dobbiamo uscire.
 			 */
-			return 0;
+			print_error("receive_message-1", errno);
 		} else {
 			/* Altri errori: inaspettato.
 			 * Se accade dobbiamo approfondire
 			 */
 			TEST_ERROR;
-			return 0;
+			print_error("receive_message-2", errno);
 		}
 	}
 	
@@ -88,6 +88,13 @@ int relase_resource(int sem_id, int sem_num) {
         print_error("Error in release_resource", errno);
     else 
         return ret;
+}
+
+int init_shared_memory(int key_shmem, void * my_data) {
+    shared_memory_id = shmget(key_shmem, sizeof(*my_data), 0666);
+    if (shared_memory_id == -1)
+        print_error("Manager, init_shared_memory", errno);
+    return shared_memory_id;
 }
 
 void start_timer(){

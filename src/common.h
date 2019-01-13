@@ -30,10 +30,20 @@
     };
 #endif
 
+struct shared_data {
+    int group_matrix[POP_SIZE][1];
+};
+
+struct message {
+    long mtype;
+};
+
 #define key_children_semaphore 1
+#define key_shared_memory 2
 
 int msg_queue_id;
 int children_semaphore_id;
+int shared_memory_id;
 
 /* config settings */
 int sim_time;
@@ -65,6 +75,7 @@ void init_msg_queue();
 void init_children_semaphore (int key_sem);
 int request_resource(int sem_id, int sem_num);
 int relase_resource(int sem_id, int sem_num);
+int init_shared_memory(int key_shmem, void * my_data);
 void start_timer();
 void stop_timer();
 void read_conf(char * conf_path);
