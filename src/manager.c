@@ -41,17 +41,9 @@ int main (int argc, char * argv[]) {
 	for(int j = 0; j < POP_SIZE; j++)
 		relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
 
-	/* initializing the matrix for the shared memory, in the first column of 
-	 * the matrix will be set the PID of the processes, and in the second
-	 * column will be set the group status (1 if the student is already 
-	 * grouped, 0 otherwise)
-	 */
-	// printf("initializing shared mem data\n");
-	// for (int i = 0; i < POP_SIZE; i++) {
-	// 	my_data->group_matrix[i][0] = population[i];
-	// 	my_data->group_matrix[i][1] = 0;
-	// }
-	// printf("initializied\n");
+	// ATTENZIONE: NECESSARIO che questo frammento di codice della memoria 
+	// condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
+	set_shared_data();
 
 	/* checking if any child proc terminated, stopped or continued */
    /* wait for any child process */
@@ -81,8 +73,28 @@ int main (int argc, char * argv[]) {
 	fprintf(stderr, "PARENT (PID=%d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
 
     //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
-    
+
     deallocate_IPCs();
 
     exit(EXIT_SUCCESS);
+}
+
+void set_shared_data(){
+	my_data = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
+    if (my_data == (void *) -1) {
+        print_error("Student, attaching shared memory", errno);
+    }
+
+	/* initializing the matrix for the shared memory, in the first column of 
+	 * the matrix will be set the PID of the processes, and in the second
+	 * column will be set the group status (1 if the student is already 
+	 * grouped, 0 otherwise)
+	 */
+	printf("initializing shared mem data\n");
+	for (int i = 0; i < POP_SIZE; i++) {
+		my_data->group_matrix[i][0] = population[i];
+		my_data->group_matrix[i][1] = 0;
+	}
+	printf("initializied\n");
+	printf("Detaching shmem: %d\n", shmdt(my_data));
 }

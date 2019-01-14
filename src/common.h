@@ -68,6 +68,9 @@ struct shared_data * my_data;
 					  errno,			\
 					  strerror(errno));}
 
+/* manager.c */
+void set_shared_data();
+
 /* student.c */
 void set_rand_ade_mark();
 void handle_signal(int signal);

@@ -66,3 +66,7 @@ void handle_signal(int signal) {
             break;
     }
 }
+
+void set_grouped(int condition) {
+    
+}
