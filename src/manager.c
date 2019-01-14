@@ -74,6 +74,15 @@ int main (int argc, char * argv[]) {
 
     //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
 
+	// debug, printing shared memory after children edit
+    for (int i = 0; i < POP_SIZE; i++) {
+    	int pid = my_data->group_matrix[i][0];
+    	int stat = my_data->group_matrix[i][1];
+    	printf("[PID:%d][%d]\n", pid, stat);
+    }
+
+    shmdt(my_data); // detaching shared memory
+
     deallocate_IPCs();
 
     exit(EXIT_SUCCESS);
@@ -82,7 +91,7 @@ int main (int argc, char * argv[]) {
 void set_shared_data(){
 	my_data = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (my_data == (void *) -1) {
-        print_error("Student, attaching shared memory", errno);
+        print_error("Error while attaching shared memory", errno);
     }
 
 	/* initializing the matrix for the shared memory, in the first column of 
@@ -90,11 +99,11 @@ void set_shared_data(){
 	 * column will be set the group status (1 if the student is already 
 	 * grouped, 0 otherwise)
 	 */
-	printf("initializing shared mem data\n");
+	printf("PARENT (PID=%d): Initializing shared memory matrix.\n", getpid());
 	for (int i = 0; i < POP_SIZE; i++) {
 		my_data->group_matrix[i][0] = population[i];
 		my_data->group_matrix[i][1] = 0;
 	}
-	printf("initializied\n");
-	printf("Detaching shmem: %d\n", shmdt(my_data));
+	printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
+	printf("PARENT (PID=%d): Shared memory detached.\n", getpid());
 }

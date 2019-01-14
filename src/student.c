@@ -21,34 +21,27 @@ int main(int argc, char * argv[]) {
     sa.sa_handler = handle_signal;
     sa.sa_flags = 0;
 
-    // setting the children_semaphore_id in the child
-    // (if we don't do that here, children_semaphore_id will be = 0 and all
-    // the operation on sempahores will exit with an error).
+    // setting the IDs of children_semaphore and shared_memory in the child
+    // (if we don't do that here, hoth semaphore and shared memory IDs will 
+    // be = 0 and all the operation on sempahores will exit with an error).
     id_children_semaphore = semget(KEY_CHILDREN_SEM, 1, IPC_CREAT | 0666);
     id_shared_memory = shmget(KEY_SHARED_MEM, sizeof(*my_data), 0666 | IPC_CREAT);
 
-   printf("CHILD: shared memory id: %d\n", id_shared_memory);
     my_data = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (my_data == (void *) -1)
-        print_error("Student, attaching shared memory", errno);
-
-    printf("Detaching shmem: %d\n", shmdt(my_data));
+        print_error("Error while attaching to shared memory", errno);
 
     set_rand_ade_mark();
     printf("CHILD (PID: %d): Hi! I'm working! ADE_Mark: %d\n", getpid(), student.ade_mark);
 
-    int test1 = request_resource(id_children_semaphore, 0);
-    int test2 = semctl(id_children_semaphore, 0, GETVAL);
-    
-    if (test1 == -1) {
-        print_error("TEST - 1", errno);
-    } else if (test2 == -1){
-        print_error("TEST - 2", errno);
-    } else {
-        printf("CHILD(%d)-REQUEST: %d\n", getpid(), test1);
-        printf("CHILD(%d)-SEMCTL: %d\n", getpid(), test1);
-    }
+    /* Child will remain blocked until the father will fill the semaphore 
+     * with enougth resources to unlock them all.
+     */
+    request_resource(id_children_semaphore, 0);
 
+    set_grouped(1);
+
+    shmdt(my_data); // detaching from shared memory
     printf("CHILD (PID: %d): exiting!\n", getpid());
 
 	exit(EXIT_SUCCESS);
@@ -68,5 +61,10 @@ void handle_signal(int signal) {
 }
 
 void set_grouped(int condition) {
-    
+    for (int i = 0; i < POP_SIZE; i++) {
+        int pid_to_test = my_data->group_matrix[i][0];
+        if (pid_to_test == getpid()) {
+            my_data->group_matrix[i][1] = condition;
+        }
+    }
 }

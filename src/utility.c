@@ -92,9 +92,9 @@ int relase_resource(int id_sem, int sem_num) {
 
 void init_shared_memory(int key_shmem) {
     id_shared_memory = shmget(key_shmem, sizeof(*my_data), 0666 | IPC_CREAT);
-    if (id_shared_memory == -1)
+    if (id_shared_memory == -1) {
         print_error("Manager, init_shared_memory", errno);
-    
+    }
     printf("Shared memory initialized with ID: %d\n", id_shared_memory);
 }
 

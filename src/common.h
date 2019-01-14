@@ -31,7 +31,7 @@
 #endif
 
 struct shared_data {
-    int group_matrix[POP_SIZE][1];
+    int group_matrix[POP_SIZE][2];
 };
 
 struct message {
@@ -74,6 +74,7 @@ void set_shared_data();
 /* student.c */
 void set_rand_ade_mark();
 void handle_signal(int signal);
+void set_grouped(int condition);
 
 /* utility.c */
 int print_error(char* from, int en);
