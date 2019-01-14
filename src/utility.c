@@ -1,7 +1,7 @@
 #include "common.h"
 
 int print_error(char* from, int en){
-    fprintf(stderr,"%s: Error #%03d: %s\n", from, en, strerror(en));
+    fprintf(stderr,"[PID:%d]: %s: Error #%03d: %s\n", getpid(), from, en, strerror(en));
     return en;
 }
 
@@ -15,22 +15,22 @@ int random_between(pid_t seed, int min, int max) {
 }
 
 void init_msg_queue(){
-    msg_queue_id = msgget(IPC_PRIVATE, 0400 | 0200);
-    if (msg_queue_id == -1) {
+    id_msg_queue = msgget(IPC_PRIVATE, 0400 | 0200);
+    if (id_msg_queue == -1) {
         print_error("Manager, init_msg_queue", errno);
     }
-    printf("Created message queue with ID: %d\n", msg_queue_id);
+    printf("Created message queue with ID: %d\n", id_msg_queue);
 }
 
-void send_message(int queue_id, struct message to_send) {
-	if (msgsnd(queue_id, &to_send, sizeof(to_send)-sizeof(long), 0) == -1) {
+void send_message(int id_queue, struct message to_send) {
+	if (msgsnd(id_queue, &to_send, sizeof(to_send)-sizeof(long), 0) == -1) {
 		TEST_ERROR;
 	}
 }
 
-void receive_message(int queue_id) {
+void receive_message(int id_queue) {
 	struct message my_msg;
-	if (msgrcv(queue_id, &my_msg, sizeof(my_msg)-sizeof(long), 0, 0) == -1) {
+	if (msgrcv(id_queue, &my_msg, sizeof(my_msg)-sizeof(long), 0, 0) == -1) {
 		/* msgrcv failed!! */
 		if (errno == EIDRM) {
 			/* 
@@ -52,23 +52,23 @@ void receive_message(int queue_id) {
 }
 
 void init_children_semaphore (int key_sem){
-	children_semaphore_id = semget(key_sem, 1, IPC_CREAT | 0666);
-	if (children_semaphore_id == -1) {
-		print_error("Manager, initChildrenSemaphore - sem_ID", errno);
+	id_children_semaphore = semget(key_sem, 1, IPC_CREAT | 0666);
+	if (id_children_semaphore == -1) {
+		print_error("Manager, initChildrenSemaphore - ID_sem", errno);
 	}
-	if (semctl(children_semaphore_id, 0, SETVAL, 0) == -1) {
+	if (semctl(id_children_semaphore, 0, SETVAL, 0) == -1) {
 		print_error("Manager, initChildrenSemaphore - SEMCTL", errno);
 	}
-	printf("Created Children Semaphore and initialized. child_sem_id=%d\n", children_semaphore_id);
+	printf("Created Children Semaphore and initialized. id_child_sem=%d\n", id_children_semaphore);
 }
 
-int request_resource(int sem_id, int sem_num) {
-    printf("requested resource\n");
+int request_resource(int id_sem, int sem_num) {
+    printf("[%d]: requested resource\n", getpid());
     struct sembuf lock;
     lock.sem_num = sem_num;
     lock.sem_op=-1;
     lock.sem_flg=0;
-    int ret = semop(sem_id, &lock, 1);
+    int ret = semop(id_sem, &lock, 1);
     
     if (ret == -1) 
         print_error("Error in request_resource", errno);
@@ -76,13 +76,13 @@ int request_resource(int sem_id, int sem_num) {
         return ret;
 }
 
-int relase_resource(int sem_id, int sem_num) {
-   printf("release resource\n");
+int relase_resource(int id_sem, int sem_num) {
+   printf("[%d]: release resource\n", getpid());
     struct sembuf unlock;
     unlock.sem_num = sem_num;
     unlock.sem_op=1;
     unlock.sem_flg=0;
-    int ret = semop(sem_id, &unlock, 1);
+    int ret = semop(id_sem, &unlock, 1);
     
     if (ret == -1) 
         print_error("Error in release_resource", errno);
@@ -90,11 +90,12 @@ int relase_resource(int sem_id, int sem_num) {
         return ret;
 }
 
-int init_shared_memory(int key_shmem, void * my_data) {
-    shared_memory_id = shmget(key_shmem, sizeof(*my_data), 0666);
-    if (shared_memory_id == -1)
+void init_shared_memory(int key_shmem) {
+    id_shared_memory = shmget(key_shmem, sizeof(*my_data), 0666 | IPC_CREAT);
+    if (id_shared_memory == -1)
         print_error("Manager, init_shared_memory", errno);
-    return shared_memory_id;
+    
+    printf("Shared memory initialized with ID: %d\n", id_shared_memory);
 }
 
 void start_timer(){
@@ -108,15 +109,15 @@ void stop_timer() {
 }
 
 void deallocate_IPCs(){
-    if (msgctl(msg_queue_id, IPC_RMID, NULL) == -1){
+    if (msgctl(id_msg_queue, IPC_RMID, NULL) == -1){
         print_error("Manager, deallocate_IPCs - 1", errno);
     }
-   if (semctl(children_semaphore_id, 0, IPC_RMID) == -1){
-       print_error("Manager, deallocate_IPCs - 2", errno);
-   }
-//    if (shmctl(idshm, IPC_RMID, NULL) == -1) {
-//        Error();
-//    }
+    if (semctl(id_children_semaphore, 0, IPC_RMID) == -1){
+        print_error("Manager, deallocate_IPCs - 2", errno);
+    }
+    if (shmctl(id_shared_memory, IPC_RMID, NULL) == -1) {
+        print_error("Manager, deallocate_IPCs - 3", errno);
+    }
     printf ("IPCs deallocated successfully.\n");
 }
 

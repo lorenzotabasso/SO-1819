@@ -38,12 +38,12 @@ struct message {
     long mtype;
 };
 
-#define key_children_semaphore 1
-#define key_shared_memory 2
+#define KEY_CHILDREN_SEM 1
+#define KEY_SHARED_MEM 2
 
-int msg_queue_id;
-int children_semaphore_id;
-int shared_memory_id;
+int id_children_semaphore;
+int id_shared_memory;
+int id_msg_queue;
 
 /* config settings */
 int sim_time;
@@ -55,6 +55,10 @@ int max_reject;
 
 /* vector of kids PIDs */
 pid_t population[POP_SIZE];
+
+// pointer which will contain the memory 
+//address for the matrix of grouped processes
+struct shared_data * my_data;
 
 #define TEST_ERROR    if (errno) {fprintf(stderr,			\
 					  "%s:%d: PID=%5d: Error %d (%s)\n", \
@@ -75,7 +79,7 @@ void init_msg_queue();
 void init_children_semaphore (int key_sem);
 int request_resource(int sem_id, int sem_num);
 int relase_resource(int sem_id, int sem_num);
-int init_shared_memory(int key_shmem, void * my_data);
+void init_shared_memory(int key_shmem);
 void start_timer();
 void stop_timer();
 void read_conf(char * conf_path);

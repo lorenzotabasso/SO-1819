@@ -4,16 +4,14 @@ int main (int argc, char * argv[]) {
     int status;
     pid_t child_pid;
     int num_alive_procs = POP_SIZE;
-    struct shared_data * my_data; 	// pointer which will contain the memory 
-    								//address for the matrix of grouped processes
 
     /* Init sim_parameters */
     read_conf("src/opt.conf");
-    init_children_semaphore(key_children_semaphore);
-    init_msg_queue();
 
-	init_shared_memory(key_shared_memory, my_data);
-	my_data = shmat(shared_memory_id, NULL, 0);
+    // init IPCs
+    init_children_semaphore(KEY_CHILDREN_SEM);
+	init_shared_memory(KEY_SHARED_MEM);
+	init_msg_queue();
 
     //start_timer();
 
@@ -22,7 +20,7 @@ int main (int argc, char * argv[]) {
 		switch (population[i] = fork()) {
 			case -1:
 				/* Handle error */
-				print_error("manager, creating children", errno);
+				print_error("Manager, creating children", errno);
 				exit(EXIT_FAILURE);
 			case 0:
 				/* CHILD CODE */
@@ -35,23 +33,25 @@ int main (int argc, char * argv[]) {
 	}
 		
 	/* PARENT CODE: the child processes exited already */
-	
-	/* initializing the matrix for the shared memory, in the first column of 
-	 * the matrix will be set the PID of the processes, and in the second
-	 * column will be set the group status (1 if the student is already 
-	 * grouped, 0 otherwise)
-	 */
-	for (int i = 0; i < POP_SIZE; i++) {
-		my_data->group_matrix[i][0] = population[i];
-		my_data->group_matrix[i][1] = 0;
-	}
 
 	/* after the creation of child, parent add POP_SIZE resource to the 
 	 * semaphore of children, in order to unblock them and to start the 
 	 * simulation
 	 */
 	for(int j = 0; j < POP_SIZE; j++)
-		relase_resource(children_semaphore_id, 0); // 0 -> the first semaphonre in the set
+		relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
+
+	/* initializing the matrix for the shared memory, in the first column of 
+	 * the matrix will be set the PID of the processes, and in the second
+	 * column will be set the group status (1 if the student is already 
+	 * grouped, 0 otherwise)
+	 */
+	// printf("initializing shared mem data\n");
+	// for (int i = 0; i < POP_SIZE; i++) {
+	// 	my_data->group_matrix[i][0] = population[i];
+	// 	my_data->group_matrix[i][1] = 0;
+	// }
+	// printf("initializied\n");
 
 	/* checking if any child proc terminated, stopped or continued */
    /* wait for any child process */
@@ -81,6 +81,7 @@ int main (int argc, char * argv[]) {
 	fprintf(stderr, "PARENT (PID=%d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
 
     //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
+    
     deallocate_IPCs();
 
     exit(EXIT_SUCCESS);
