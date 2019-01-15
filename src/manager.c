@@ -3,7 +3,7 @@
 int main (int argc, char * argv[]) {
     int status;
     pid_t child_pid;
-    int num_alive_procs = POP_SIZE;
+    //int num_alive_procs = POP_SIZE;
 
     /* Init sim_parameters */
     read_conf("src/opt.conf");
@@ -19,7 +19,7 @@ int main (int argc, char * argv[]) {
 		switch (population[i] = fork()) {
 			case -1:
 				/* Handle error */
-				print_error("Manager, creating children", errno);
+				print_error();
 				exit(EXIT_FAILURE);
 			case 0:
 				/* CHILD CODE */
@@ -46,39 +46,36 @@ int main (int argc, char * argv[]) {
 
 	/* checking if any child proc terminated, stopped or continued */
    /* wait for any child process */
-	while ((child_pid = waitpid(-1,&status,WUNTRACED | WCONTINUED)) != -1) {
-		printf("PARENT (PID=%d): Got info from child with PID=%d. Status 0x%04X\n", getpid(), child_pid, status);
+	// while ((child_pid = waitpid(-1,&status,WUNTRACED | WCONTINUED)) != -1) {
+	// 	printf("PARENT (PID=%d): Got info from child with PID=%d. Status 0x%04X\n", getpid(), child_pid, status);
 		
-        /* Checking the status */
-		if (WIFEXITED(status)) {
-			/* the child proc exited, must decrement num_alive_procs */
-			printf("  child correctly exited with status %d\n", WEXITSTATUS(status));
-			num_alive_procs--;
-		}
-		if (WIFSIGNALED(status)) {
-			/* the child proc terminated by signal, must decrement num_alive_procs */
-			printf("  child terminated by the signal %d\n",WTERMSIG(status));
-			num_alive_procs--;
-		}
-		if (WIFSTOPPED(status)) {
-			printf("  child stopped by the signal %d\n", WSTOPSIG(status));
-		}
-		if (WIFCONTINUED(status)) {
-			printf("  child continued after being stopped\n");
-		}
-		printf("PARENT (PID=%d): Kids left=%d\n",getpid(), num_alive_procs);
-	}
+ //        /* Checking the status */
+	// 	if (WIFEXITED(status)) {
+	// 		/* the child proc exited, must decrement num_alive_procs */
+	// 		printf("  child correctly exited with status %d\n", WEXITSTATUS(status));
+	// 		num_alive_procs--;
+	// 	}
+	// 	if (WIFSIGNALED(status)) {
+	// 		/* the child proc terminated by signal, must decrement num_alive_procs */
+	// 		printf("  child terminated by the signal %d\n",WTERMSIG(status));
+	// 		num_alive_procs--;
+	// 	}
+	// 	if (WIFSTOPPED(status)) {
+	// 		printf("  child stopped by the signal %d\n", WSTOPSIG(status));
+	// 	}
+	// 	if (WIFCONTINUED(status)) {
+	// 		printf("  child continued after being stopped\n");
+	// 	}
+	// 	printf("PARENT (PID=%d): Kids left=%d\n",getpid(), num_alive_procs);
+	// }
+	// fprintf(stderr, "PARENT (PID=%d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
+
+	// waiting for all child proceses
+	while ((child_pid = wait(&status)) > 0);
 	
-	fprintf(stderr, "PARENT (PID=%d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
+	printf("PARENT (PID=%d): done with waiting.\n", getpid());
 
     //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
-
-	// debug, printing shared memory after children edit
-    for (int i = 0; i < POP_SIZE; i++) {
-    	int pid = my_data->group_matrix[i][0];
-    	int stat = my_data->group_matrix[i][1];
-    	printf("[PID:%d][%d]\n", pid, stat);
-    }
 
     shmdt(my_data); // detaching shared memory
 
@@ -90,7 +87,7 @@ int main (int argc, char * argv[]) {
 void set_shared_data(){
 	my_data = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (my_data == (void *) -1) {
-        print_error("Error while attaching shared memory", errno);
+        print_error();
     }
 
 	/* initializing the matrix for the shared memory, in the first column of 

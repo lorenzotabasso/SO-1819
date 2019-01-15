@@ -29,20 +29,47 @@ int main(int argc, char * argv[]) {
 
     my_data = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (my_data == (void *) -1)
-        print_error("Error while attaching to shared memory", errno);
+        print_error();
 
     set_rand_ade_mark();
     printf("CHILD (PID: %d): Hi! I'm working! ADE_Mark: %d\n", getpid(), student.ade_mark);
+
+    init_msg_queue(getpid());
 
     /* Child will remain blocked until the father will fill the semaphore 
      * with enougth resources to unlock them all.
      */
     request_resource(id_children_semaphore, 0);
 
-    init_msg_queue(getpid());
-    deallocate_msg_queue(id_msg_queue);
+    
+    // struct message msg;
+    // msg.mtext[1] = 'a';
 
-    //set_grouped(1);
+    // int pid_to_send;
+    // for (int i = 0; i <= POP_SIZE; ++i) {
+    //     if (getpid() % 2 == 0){
+    //         if (my_data->group_matrix[i][0] % 2 == 0) {
+    //             pid_to_send = my_data->group_matrix[i][0];
+    //         }
+    //     } else {
+    //         if (my_data->group_matrix[i][0] % 2 != 0) {
+    //             pid_to_send = my_data->group_matrix[i][0];
+    //         }
+    //     }
+    // }
+
+    // send_message(get_msg_queue_id(pid_to_send), msg);
+
+    // msgrcv(id_msg_queue, &msg_in_queue, sizeof(msg_in_queue)-sizeof(long), getpid(), 0);
+    // switch(msg_in_queue.mtext[1]) {
+    //     case 'a':
+    //         printf("CHILD (PID: %d): message received!\n", getpid());
+    //         break;
+    //     default:
+    //         break;
+    // }
+
+    deallocate_msg_queue(id_msg_queue);
 
     shmdt(my_data); // detaching from shared memory
 

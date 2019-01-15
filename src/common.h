@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define POP_SIZE 3
+#define POP_SIZE 4
 #define DEBUG 0
 
 #include <unistd.h>
@@ -36,7 +36,10 @@ struct shared_data {
 
 struct message {
     long mtype;
+    char mtext[1];
 };
+
+struct message msg_in_queue;
 
 #define KEY_CHILDREN_SEM 1
 #define KEY_SHARED_MEM 2
@@ -77,8 +80,9 @@ void handle_signal(int signal);
 void set_grouped(int condition);
 
 /* utility.c */
-int print_error(char* from, int en);
+int print_error();
 int random_between(pid_t seed, int min, int max);
+int select_random_receiver();
 void init_msg_queue(int key_msg_queue);
 int get_msg_queue_id(int id_queue);
 void send_message(int id_queue, struct message to_send);
