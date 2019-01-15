@@ -11,7 +11,6 @@ int main (int argc, char * argv[]) {
     // init IPCs
     init_children_semaphore(KEY_CHILDREN_SEM);
 	init_shared_memory(KEY_SHARED_MEM);
-	init_msg_queue();
 
     //start_timer();
 

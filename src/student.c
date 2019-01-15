@@ -39,10 +39,12 @@ int main(int argc, char * argv[]) {
      */
     request_resource(id_children_semaphore, 0);
 
-    set_grouped(1);
+    init_msg_queue(getpid());
+    deallocate_msg_queue(id_msg_queue);
+
+    //set_grouped(1);
 
     shmdt(my_data); // detaching from shared memory
-    printf("CHILD (PID: %d): exiting!\n", getpid());
 
 	exit(EXIT_SUCCESS);
 }

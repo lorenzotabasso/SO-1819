@@ -79,7 +79,11 @@ void set_grouped(int condition);
 /* utility.c */
 int print_error(char* from, int en);
 int random_between(pid_t seed, int min, int max);
-void init_msg_queue();
+void init_msg_queue(int key_msg_queue);
+int get_msg_queue_id(int id_queue);
+void send_message(int id_queue, struct message to_send);
+void receive_message(int id_queue);
+void deallocate_msg_queue(int id_msg_queue);
 void init_children_semaphore (int key_sem);
 int request_resource(int sem_id, int sem_num);
 int relase_resource(int sem_id, int sem_num);

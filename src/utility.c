@@ -1,7 +1,7 @@
 #include "common.h"
 
 int print_error(char* from, int en){
-    fprintf(stderr,"[PID:%d]: %s: Error #%03d: %s\n", getpid(), from, en, strerror(en));
+    fprintf(stderr,"\t[PID:%d]: %s: Error #%03d: %s\n", getpid(), from, en, strerror(en));
     return en;
 }
 
@@ -14,12 +14,20 @@ int random_between(pid_t seed, int min, int max) {
     return rand() % (max + 1 - min) + min;
 }
 
-void init_msg_queue(){
-    id_msg_queue = msgget(IPC_PRIVATE, 0400 | 0200);
+void init_msg_queue(int key_msg_queue){
+    id_msg_queue = msgget(key_msg_queue, 0600 | IPC_CREAT);
     if (id_msg_queue == -1) {
-        print_error("Manager, init_msg_queue", errno);
+        print_error("Error in init_msg_queue", errno);
     }
-    printf("Created message queue with ID: %d\n", id_msg_queue);
+    printf("(PID:%d)Created message queue with ID: %d\n",getpid(), id_msg_queue);
+}
+
+int get_msg_queue_id(int id_queue){
+    int ret = msgget(id_queue, 0600);
+    if (ret == -1) {
+        print_error("Error in get_msg_queue_id", errno);
+    }
+    return ret;
 }
 
 void send_message(int id_queue, struct message to_send) {
@@ -49,6 +57,13 @@ void receive_message(int id_queue) {
 	}
 	
 	// File: test-msg-start e test-rcv-snd
+}
+
+void deallocate_msg_queue(int id_msg_queue){
+    if (msgctl(id_msg_queue, IPC_RMID, NULL) == -1){
+        print_error("Error in deallocate_msg_queue", errno);
+    }
+    printf("Message queue with ID: %d deallocated\n", id_msg_queue);
 }
 
 void init_children_semaphore (int key_sem){
@@ -109,9 +124,9 @@ void stop_timer() {
 }
 
 void deallocate_IPCs(){
-    if (msgctl(id_msg_queue, IPC_RMID, NULL) == -1){
-        print_error("Manager, deallocate_IPCs - 1", errno);
-    }
+    // if (msgctl(id_msg_queue, IPC_RMID, NULL) == -1){
+    //     print_error("Manager, deallocate_IPCs - 1", errno);
+    // }
     if (semctl(id_children_semaphore, 0, IPC_RMID) == -1){
         print_error("Manager, deallocate_IPCs - 2", errno);
     }
