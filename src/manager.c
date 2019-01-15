@@ -19,7 +19,7 @@ int main (int argc, char * argv[]) {
 		switch (population[i] = fork()) {
 			case -1:
 				/* Handle error */
-				print_error();
+				TEST_ERROR;
 				exit(EXIT_FAILURE);
 			case 0:
 				/* CHILD CODE */
@@ -87,7 +87,7 @@ int main (int argc, char * argv[]) {
 void set_shared_data(){
 	my_data = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (my_data == (void *) -1) {
-        print_error();
+        TEST_ERROR;
     }
 
 	/* initializing the matrix for the shared memory, in the first column of 

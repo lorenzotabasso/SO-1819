@@ -2,7 +2,6 @@
 #define COMMON_H
 
 #define POP_SIZE 4
-#define DEBUG 0
 
 #include <unistd.h>
 #include <stdio.h>
@@ -64,12 +63,17 @@ pid_t population[POP_SIZE];
 struct shared_data * my_data;
 
 #define TEST_ERROR    if (errno) {fprintf(stderr,			\
-					  "%s:%d: PID=%5d: Error %d (%s)\n", \
+					  "\t%s:%d: PID=%5d: Error %d (%s)\n", \
 					  __FILE__,			\
 					  __LINE__,			\
 					  getpid(),			\
 					  errno,			\
 					  strerror(errno));}
+
+#define DEBUG    {printf("\t%s:%d: PID=%5d: Debug!\n", \
+                      __FILE__,         \
+                      __LINE__,         \
+                      getpid());}
 
 /* manager.c */
 void set_shared_data();
@@ -80,7 +84,6 @@ void handle_signal(int signal);
 void set_grouped(int condition);
 
 /* utility.c */
-int print_error();
 int random_between(pid_t seed, int min, int max);
 int select_random_receiver();
 void init_msg_queue(int key_msg_queue);

@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
 
     my_data = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (my_data == (void *) -1)
-        print_error();
+        TEST_ERROR;
 
     set_rand_ade_mark();
     printf("CHILD (PID: %d): Hi! I'm working! ADE_Mark: %d\n", getpid(), student.ade_mark);
@@ -42,32 +42,36 @@ int main(int argc, char * argv[]) {
     request_resource(id_children_semaphore, 0);
 
     
-    // struct message msg;
-    // msg.mtext[1] = 'a';
+    struct message msg;
+    msg.mtext[1] = 'a';
 
-    // int pid_to_send;
-    // for (int i = 0; i <= POP_SIZE; ++i) {
-    //     if (getpid() % 2 == 0){
-    //         if (my_data->group_matrix[i][0] % 2 == 0) {
-    //             pid_to_send = my_data->group_matrix[i][0];
-    //         }
-    //     } else {
-    //         if (my_data->group_matrix[i][0] % 2 != 0) {
-    //             pid_to_send = my_data->group_matrix[i][0];
-    //         }
-    //     }
-    // }
+    int pid_to_send;
+    for (int i = 0; i <= POP_SIZE; ++i) {
+        if (getpid() % 2 == 0){
+            if (my_data->group_matrix[i][0] % 2 == 0) {
+                pid_to_send = my_data->group_matrix[i][0];
+            }
+        } else {
+            if (my_data->group_matrix[i][0] % 2 != 0) {
+                pid_to_send = my_data->group_matrix[i][0];
+            }
+        }
+    }
 
-    // send_message(get_msg_queue_id(pid_to_send), msg);
+    // send_message(get_msg_queue_id(getpid()), msg);
 
+    // DEBUG;
     // msgrcv(id_msg_queue, &msg_in_queue, sizeof(msg_in_queue)-sizeof(long), getpid(), 0);
     // switch(msg_in_queue.mtext[1]) {
     //     case 'a':
+    //         DEBUG;
     //         printf("CHILD (PID: %d): message received!\n", getpid());
     //         break;
     //     default:
+    //         DEBUG;
     //         break;
     // }
+    // DEBUG;
 
     deallocate_msg_queue(id_msg_queue);
 
