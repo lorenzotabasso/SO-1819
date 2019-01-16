@@ -44,32 +44,6 @@ int main (int argc, char * argv[]) {
 	// condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
 	set_shared_data();
 
-	/* checking if any child proc terminated, stopped or continued */
-   /* wait for any child process */
-	// while ((child_pid = waitpid(-1,&status,WUNTRACED | WCONTINUED)) != -1) {
-	// 	printf("PARENT (PID=%d): Got info from child with PID=%d. Status 0x%04X\n", getpid(), child_pid, status);
-		
- //        /* Checking the status */
-	// 	if (WIFEXITED(status)) {
-	// 		/* the child proc exited, must decrement num_alive_procs */
-	// 		printf("  child correctly exited with status %d\n", WEXITSTATUS(status));
-	// 		num_alive_procs--;
-	// 	}
-	// 	if (WIFSIGNALED(status)) {
-	// 		/* the child proc terminated by signal, must decrement num_alive_procs */
-	// 		printf("  child terminated by the signal %d\n",WTERMSIG(status));
-	// 		num_alive_procs--;
-	// 	}
-	// 	if (WIFSTOPPED(status)) {
-	// 		printf("  child stopped by the signal %d\n", WSTOPSIG(status));
-	// 	}
-	// 	if (WIFCONTINUED(status)) {
-	// 		printf("  child continued after being stopped\n");
-	// 	}
-	// 	printf("PARENT (PID=%d): Kids left=%d\n",getpid(), num_alive_procs);
-	// }
-	// fprintf(stderr, "PARENT (PID=%d): done with waiting because: %s (Err #%d)\n", getpid(), strerror(errno), errno);
-
 	// waiting for all child proceses
 	while ((child_pid = wait(&status)) > 0);
 	
@@ -101,5 +75,4 @@ void set_shared_data(){
 		my_data->group_matrix[i][1] = 0;
 	}
 	printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
-	printf("PARENT (PID=%d): Shared memory detached.\n", getpid());
 }

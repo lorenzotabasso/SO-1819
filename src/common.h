@@ -18,6 +18,15 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#define RED   "\x1B[31m"
+#define GRN   "\x1B[32m"
+#define YEL   "\x1B[33m"
+#define BLU   "\x1B[34m"
+#define MAG   "\x1B[35m"
+#define CYN   "\x1B[36m"
+#define WHT   "\x1B[37m"
+#define RESET "\x1B[0m"
+
 #if defined(__linux__)
     union semun {
         int val;
@@ -35,7 +44,7 @@ struct shared_data {
 
 struct message {
     long mtype;
-    char mtext[1];
+    char mtext[5];
 };
 
 struct message msg_in_queue;
@@ -89,7 +98,6 @@ int select_random_receiver();
 void init_msg_queue(int key_msg_queue);
 int get_msg_queue_id(int id_queue);
 void send_message(int id_queue, struct message to_send);
-void receive_message(int id_queue);
 void deallocate_msg_queue(int id_msg_queue);
 void init_children_semaphore (int key_sem);
 int request_resource(int sem_id, int sem_num);

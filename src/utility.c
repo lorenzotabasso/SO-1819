@@ -16,7 +16,7 @@ int select_random_receiver(){
 }
 
 void init_msg_queue(int key_msg_queue){
-    id_msg_queue = msgget(key_msg_queue, 0600 | IPC_CREAT);
+    id_msg_queue = msgget(key_msg_queue, 0666 | IPC_CREAT);
     if (id_msg_queue == -1) {
         TEST_ERROR;
     }
@@ -24,7 +24,7 @@ void init_msg_queue(int key_msg_queue){
 }
 
 int get_msg_queue_id(int id_queue){
-    int ret = msgget(id_queue, 0600);
+    int ret = msgget(id_queue, 0666);
     if (ret == -1) {
         TEST_ERROR;
     }
@@ -121,9 +121,9 @@ void stop_timer() {
 }
 
 void deallocate_IPCs(){
-    // if (msgctl(id_msg_queue, IPC_RMID, NULL) == -1){
-    //     TEST_ERROR;
-    // }
+    for (int i = 0; i < POP_SIZE; i++) {
+        deallocate_msg_queue(get_msg_queue_id(population[i]));
+    }
     if (semctl(id_children_semaphore, 0, IPC_RMID) == -1){
         TEST_ERROR;
     }
