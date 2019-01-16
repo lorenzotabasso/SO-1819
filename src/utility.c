@@ -37,29 +37,6 @@ void send_message(int id_queue, struct message to_send) {
 	}
 }
 
-void receive_message(int id_queue) {
-	struct message my_msg;
-	if (msgrcv(id_queue, &my_msg, sizeof(my_msg)-sizeof(long), 0, 0) == -1) {
-		/* msgrcv failed!! */
-		if (errno == EIDRM) {
-			/* 
-			 * La  coda  e` stata  cancellata  dal
-			 * processo che ha trovato l'elenco di
-			 * records pieno. Dobbiamo uscire.
-			 */
-			TEST_ERROR;
-		} else {
-			/* Altri errori: inaspettato.
-			 * Se accade dobbiamo approfondire
-			 */
-			TEST_ERROR;
-			TEST_ERROR;
-		}
-	}
-	
-	// File: test-msg-start e test-rcv-snd
-}
-
 void deallocate_msg_queue(int id_msg_queue){
     if (msgctl(id_msg_queue, IPC_RMID, NULL) == -1){
         TEST_ERROR;
