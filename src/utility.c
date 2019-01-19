@@ -164,7 +164,7 @@ void stampa_list (list l){
 }
 
 list crea_nodo (int i,int voto, int p){
-    list nuovo= (list) malloc(sizeof(list));
+    list nuovo = (list) malloc(sizeof(list));
     nuovo->student = i;
     nuovo->voto_ade = voto;
     nuovo->pref_gruppo = p;

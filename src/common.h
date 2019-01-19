@@ -52,15 +52,15 @@ struct shared_memory * shm_pointer;
 struct sigaction sa; // needed for signal hadling in student
 
 typedef enum {FALSE,TRUE} bool;
-typedef struct node* list;
+typedef struct _node* list;
 
-typedef struct _node {
+struct _node {
     //char ask; //stringa == il nostro dato
     int student;
     int voto_ade;
     int pref_gruppo;
     list nxt; //puntatore al prossimo elemento
-}node;
+};
 
 struct my_msg{
     long mtype;
