@@ -51,6 +51,17 @@ struct shared_memory * my_shm;
 
 struct sigaction sa; // needed for signal hadling in student
 
+typedef enum {FALSE,TRUE}bool;
+typedef struct _nodo* list;
+
+typedef struct _nodo {
+    //char ask; //stringa == il nostro dato
+    int student;
+    int voto_ade;
+    int pref_gruppo;
+    list nxt; //puntatore al prossimo elemento
+}node;
+
 struct my_msg{
     long mtype;
     char ask;
@@ -61,19 +72,8 @@ struct my_msg{
 
 struct my_msg2{
     long mtype;
-    lista gruppo;
+    list gruppo;
 } costrutto2;
-
-typedef enum {FALSE,TRUE}bool;
-typedef struct _nodo* lista;
-
-typedef struct _nodo {
-    //char ask; //stringa == il nostro dato
-    int student;
-    int voto_ade;
-    int pref_gruppo;
-    lista nxt; //puntatore al prossimo elemento
-}node;
 
 #define KEY_CHILDREN_SEMAPHORE ftok("manager.c",1)
 #define KEY_MESSAGE_QUEUE ftok("student.c",2)
@@ -99,23 +99,32 @@ pid_t population[POP_SIZE];
 void set_shared_data();
 
 /* student.c */
-void set_rand_ade_mark();
+void invia_invito(); // invia inviti per unirsi al suo gruppo
+list leggi_inviti(list l); // legge la list contenente gli inviti ricevuti
+void init_student(); // inizializza le variabili  dello studente
 void handle_signal(int signal);
+void goodbye(int i);
 
 /* utility.c */
 int random_between(pid_t seed, int min, int max);
-int select_random_receiver();
-void init_msg_queue(int key_msg_queue);
-int get_msg_queue_id(int id_queue);
-void send_message(int id_queue, struct message to_send);
-void deallocate_msg_queue(int id_msg_queue);
+void init_message_queue(int key_msg_queue);
+void deallocate_msg_queue(int id_message_queue);
 void init_children_semaphore (int key_sem);
-int request_resource(int sem_id, int sem_num);
-int relase_resource(int sem_id, int sem_num);
+int init_sem_zero(int sem_id, int sem_num);
+int request_resource(int id_sem, int sem_num);
+int relase_resource(int id_sem, int sem_num);
 void init_shared_memory(int key_shmem);
 void start_timer();
 void stop_timer();
-void read_conf(char * conf_path);
 void deallocate_IPCs();
+void read_conf(char * config_path);
+void stampa_list (list l);
+list crea_nodo (int i,int voto, int p);
+list inserisci_in_testa(list l, int i,int voto,int p);
+list inserisci_in_coda(list l,int i,int voto, int p);
+list rimuovi_in_testa (list l);
+list rimuovi_in_coda (list l);
+list rimuovi_studente(list l, int n);
+int calc_pref(int pref_2,int pref_3,int pref_4);
 
 #endif // COMMON_H

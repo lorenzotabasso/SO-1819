@@ -7,8 +7,8 @@ int invites; //numero di inviti massimi che uno studente può inviare prima di r
 int nof_elem;
 int leader;
 int ade_mark; //voto di archittettura degli elaboratori
-lista requests; // lista di iniviti o risposte ad inviti ricevute
-lista group;
+list requests; // list di iniviti o risposte ad inviti ricevute
+list group;
 
 int condition; // condizione uscita while principale
 
@@ -21,18 +21,6 @@ int id_student;
 int msg_answer;
 //*************//
 
-//funzioni studente
-void initialize_info(); // inizializza le variabili  dello studente
-void goodbye(int i);
-void invia_invito(); // invia inviti per unirsi al suo gruppo
-lista leggi_inviti(lista l); // legge la lista contenente gli inviti ricevuti
-lista leggi_risposte(lista k); // contiene le risposte agli inviti dello studente
-//***********/
-
-void set_rand_ade_mark(){
-    student.ade_mark = random_between(getpid(), 18, 30);
-}
-
 int main(int argc, char * argv[]) {
     sa.sa_handler = handle_signal;
     sa.sa_flags = 0;
@@ -40,8 +28,8 @@ int main(int argc, char * argv[]) {
     // setting the IDs of children_semaphore and shared_memory in the child
     // (if we don't do that here, both semaphore and shared memory IDs will 
     // be = 0 and all the operation on sempahores will exit with an error).
-    id_children_semaphore = semget(KEY_CHILDREN_SEM, 1, IPC_CREAT | 0666);
-    id_shared_memory = shmget(KEY_SHARED_MEM, sizeof(*my_shm), 0666 | IPC_CREAT);
+    id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE, 1, IPC_CREAT | 0666);
+    id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*my_shm), 0666 | IPC_CREAT);
 
     my_shm = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (my_shm == (void *) -1) {
@@ -54,7 +42,9 @@ int main(int argc, char * argv[]) {
     /* Child will remain blocked until the father will fill the semaphore 
      * with enougth resources to unlock them all.
      */
+    DEBUG;
     request_resource(id_children_semaphore, 0);
+    DEBUG;
 
     
     while(condition){
@@ -75,7 +65,7 @@ int main(int argc, char * argv[]) {
             }
         }
         else {
-            verita = 0;
+            condition = 0;
         }
 
         msgrcv(msg,&costrutto,sizeof(costrutto),0,0666);
@@ -148,7 +138,7 @@ void invia_invito(){
     fflush(stdout);
 }
 
-lista leggi_inviti(lista inviti){
+list leggi_inviti(list inviti){
     while(inviti!=NULL && group_num == 1){
         if(group_num == 1){
             fflush(stdout);
@@ -221,7 +211,7 @@ void handle_signal(int signal) {
     printf("CHILD (PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
     switch (signal) {
         case SIGALRM:
-            verita = 0;
+            condition = 0;
             break;
         default:
             break;
@@ -229,7 +219,7 @@ void handle_signal(int signal) {
 }
 
 void init_student(){
-    read_conf("opt.conf");
+    read_conf("src/opt.conf");
 
     id_student = getpid();
     leader = 1;
@@ -244,11 +234,11 @@ void init_student(){
     group_num = 1;
     scarto_voto=0;
     reject = max_reject;
-    //id_message_queue = msgget(key_msg,IPC_CREAT | 0666);
+    //id_message_queue = msgget(KEY_MESSAGE_QUEUE,IPC_CREAT | 0666);
     init_message_queue(KEY_MESSAGE_QUEUE);
     // se usassimo il PID come chiave?
     //id_children_semaphore = semget(key_children_semaphore,1,IPC_CREAT|0666);
-    init_children_semaphore(KEY_CHILDREN_SEM);
+    init_children_semaphore(KEY_CHILDREN_SEMAPHORE);
 }
 
 void goodbye(int i){

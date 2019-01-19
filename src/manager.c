@@ -7,16 +7,15 @@ int main (int argc, char * argv[]) {
     int process_voti = POP_SIZE;
 
     // init IPCs
-    init_children_semaphore(KEY_CHILDREN_SEM);
-    init_shared_memory(KEY_SHARED_MEM);
+    init_children_semaphore(KEY_CHILDREN_SEMAPHORE);
+    init_shared_memory(KEY_SHARED_MEMORY);
 
-    id_children_semaphore = semget(key_children_semaphore,1,IPC_CREAT|0666);
-    id_message_queue = msgget(key_msg,IPC_CREAT | 0666);
-
-    init_sem_work(id_children_semaphore,0);
+    id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE,1,IPC_CREAT|0666);
+    id_message_queue = msgget(KEY_MESSAGE_QUEUE,IPC_CREAT | 0666);
     
     /* Init sim_parameters */
     read_conf("src/opt.conf");
+    init_sem_zero(id_children_semaphore,0);
     //start_timer();
 
     printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
@@ -46,7 +45,7 @@ int main (int argc, char * argv[]) {
 		relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
 
     while(process_voti > 0){
-        msgrcv(coda_messaggi,&costrutto2,sizeof(costrutto2),getpid(),0666);
+        msgrcv(id_message_queue,&costrutto2,sizeof(costrutto2),getpid(),0666);
         int i = 0;
         int group_elem[3][1];
         int max_mark = 0;
@@ -102,7 +101,7 @@ int main (int argc, char * argv[]) {
 }
 
 void set_shared_data(){
-    my_shm = /*(struct shared_data *)*/ shmat(shared_memory_id, NULL, 0);
+    my_shm = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (my_shm == (void *) -1) {
         PRINT_ERROR;
     }

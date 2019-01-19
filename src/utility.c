@@ -11,42 +11,48 @@ int random_between(pid_t seed, int min, int max) {
 
 void init_message_queue(int key_msg_queue){
     id_message_queue = msgget(key_msg_queue, 0666 | IPC_CREAT);
-    if (id_msg_queue == -1) {
+    if (id_message_queue == -1) {
         PRINT_ERROR;
     }
-    printf("(PID:%d)Created message queue with ID: %d\n",getpid(), id_msg_queue);
+    printf("(PID:%d)Created message queue with ID: %d\n",getpid(), id_message_queue);
 }
 
 // int get_msg_queue_id(int id_queue){
 //     int ret = msgget(id_queue, 0666);
 //     if (ret == -1) {
-//         TEST_ERROR;
+//         PRINT_ERROR;
 //     }
 //     return ret;
 // }
 
-void send_message(int id_queue, struct message to_send) {
-	if (msgsnd(id_queue, &to_send, sizeof(to_send)-sizeof(long), 0) == -1) {
-		TEST_ERROR;
-	}
-}
+// void send_message(int id_queue, struct message to_send) {
+// 	if (msgsnd(id_queue, &to_send, sizeof(to_send)-sizeof(long), 0) == -1) {
+// 		PRINT_ERROR;
+// 	}
+// }
 
-void deallocate_msg_queue(int id_msg_queue){
-    if (msgctl(id_msg_queue, IPC_RMID, NULL) == -1){
-        TEST_ERROR;
+void deallocate_msg_queue(int id_message_queue){
+    if (msgctl(id_message_queue, IPC_RMID, NULL) == -1){
+        PRINT_ERROR;
     }
-    printf("Message queue with ID: %d deallocated\n", id_msg_queue);
+    printf("Message queue with ID: %d deallocated\n", id_message_queue);
 }
 
 void init_children_semaphore (int key_sem){
 	id_children_semaphore = semget(key_sem, 1, IPC_CREAT | 0666);
 	if (id_children_semaphore == -1) {
-		TEST_ERROR;
+		PRINT_ERROR;
 	}
 	if (semctl(id_children_semaphore, 0, SETVAL, 0) == -1) {
-		TEST_ERROR;
+		PRINT_ERROR;
 	}
 	printf("Created Children Semaphore and initialized. id_child_sem=%d\n", id_children_semaphore);
+}
+
+int init_sem_zero(int sem_id, int sem_num){
+    union semun arg;
+    arg.val= 0;
+    return semctl(sem_id,sem_num,SETVAL,arg);
 }
 
 int request_resource(int id_sem, int sem_num) {
@@ -95,13 +101,13 @@ void stop_timer() {
 
 void deallocate_IPCs(){
     for (int i = 0; i < POP_SIZE; i++) {
-        deallocate_msg_queue(get_msg_queue_id(population[i]));
+        //deallocate_msg_queue(get_msg_queue_id(population[i]));
     }
     if (semctl(id_children_semaphore, 0, IPC_RMID) == -1){
-        TEST_ERROR;
+        PRINT_ERROR;
     }
     if (shmctl(id_shared_memory, IPC_RMID, NULL) == -1) {
-        TEST_ERROR;
+        PRINT_ERROR;
     }
     printf ("IPCs deallocated successfully.\n");
 }
@@ -112,62 +118,62 @@ void read_conf(char * config_path){
     FILE *config_fp = fopen(config_path, "r");
 
     if (config_fp == NULL){
-        TEST_ERROR;
+        PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "sim_time = %d", &sim_time) != 1) {
-        TEST_ERROR;
+        PRINT_ERROR;
     } else {
         if (sim_time < 0)
-            TEST_ERROR;
+            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_2 = %d", &dev_preference_2) != 1) {
-        TEST_ERROR;
+        PRINT_ERROR;
     } else {
         if (sim_time < 0)
-            TEST_ERROR;
+            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_3 = %d", &dev_preference_3) != 1) {
-        TEST_ERROR;
+        PRINT_ERROR;
     } else {
         if (sim_time < 0)
-            TEST_ERROR;
+            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_4 = %d", &dev_preference_4) != 1) {
-        TEST_ERROR;
+        PRINT_ERROR;
     } else {
         if (sim_time < 0)
-            TEST_ERROR;
+            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "nof_invites = %d", &nof_invites) != 1) {
-        TEST_ERROR;
+        PRINT_ERROR;
     } else {
         if (sim_time < 0)
-            TEST_ERROR;
+            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "max_reject = %d", &max_reject) != 1) {
-        TEST_ERROR;
+        PRINT_ERROR;
     } else {
         if (sim_time < 0)
-            TEST_ERROR;
+            PRINT_ERROR;
     }
     printf("Config loaded.\n");
 }
 
 // UTILITY su srutture dati ---------------------------------------------------
 
-void stampa_lista (lista l){
+void stampa_list (list l){
     while (l != NULL){
         printf("%d; ", (*l).student);
         l=(*l).nxt;
@@ -175,8 +181,8 @@ void stampa_lista (lista l){
     printf("\n");
 }
 
-lista crea_nodo (int i,int voto, int p){
-    lista nuovo= (lista) malloc(sizeof(lista));
+list crea_nodo (int i,int voto, int p){
+    list nuovo= (list) malloc(sizeof(list));
     nuovo->student = i;
     nuovo->voto_ade = voto;
     nuovo->pref_gruppo = p;
@@ -184,15 +190,15 @@ lista crea_nodo (int i,int voto, int p){
     return nuovo;
 }
 
-lista inserisci_in_testa(lista l, int i,int voto,int p){
-    lista first = crea_nodo(i,voto,p);
+list inserisci_in_testa(list l, int i,int voto,int p){
+    list first = crea_nodo(i,voto,p);
     (*first).nxt = l;
     return first;
 }
 
-lista inserisci_in_coda(lista l,int i,int voto, int p){
+list inserisci_in_coda(list l,int i,int voto, int p){
     if(!(*l).nxt){
-        lista new= crea_nodo(i,voto,p);
+        list new= crea_nodo(i,voto,p);
         (*l).nxt=new;
     }
     else {
@@ -201,12 +207,12 @@ lista inserisci_in_coda(lista l,int i,int voto, int p){
     return l;
 }
 
-lista rimuovi_in_testa (lista l){
+list rimuovi_in_testa (list l){
     l=(*l).nxt;
     return l;
 }
 
-lista rimuovi_in_coda (lista l){
+list rimuovi_in_coda (list l){
     if(!(*(*l).nxt).nxt){
         (*l).nxt=NULL;
     }
@@ -216,7 +222,7 @@ lista rimuovi_in_coda (lista l){
     return l;
 }
 
-lista rimuovi_studente(lista l, int n){
+list rimuovi_studente(list l, int n){
     if(l->student != n && l->nxt != NULL){
         if(l->nxt->student == n){
             l-> nxt = l->nxt->nxt;
