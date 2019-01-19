@@ -3,7 +3,7 @@
 
 #define POP_SIZE 4
 #define DEBUG {printf(RED "\tDEBUG at FILE: %s LINE:%d" RESET "\n", __FILE__, __LINE__);}
-#define PRINT_ERROR    if (errno) {fprintf(stderr, "\t%s:%d: PID=%5d: Error %d (%s)\n", \
+#define PRINT_ERROR if (errno) {fprintf(stderr, "\t%s:%d: PID=%5d: Error %d (%s)\n", \
                       __FILE__,    __LINE__, getpid(), errno, strerror(errno));}
 
 #include <unistd.h>
@@ -47,14 +47,14 @@ struct shared_memory {
 
 // pointer which will contain the memory
 //address for the matrix of grouped processes
-struct shared_memory * my_shm;
+struct shared_memory * shm_pointer;
 
 struct sigaction sa; // needed for signal hadling in student
 
-typedef enum {FALSE,TRUE}bool;
-typedef struct _nodo* list;
+typedef enum {FALSE,TRUE} bool;
+typedef struct node* list;
 
-typedef struct _nodo {
+typedef struct _node {
     //char ask; //stringa == il nostro dato
     int student;
     int voto_ade;
@@ -77,8 +77,7 @@ struct my_msg2{
 
 #define KEY_CHILDREN_SEMAPHORE ftok("manager.c",1)
 #define KEY_MESSAGE_QUEUE ftok("student.c",2)
-#define KEY_MSG_ANSWER ftok("student.c",3)
-#define KEY_SHARED_MEMORY ftok("manager.c",4)
+#define KEY_SHARED_MEMORY ftok("manager.c",3)
 
 int id_children_semaphore;
 int id_shared_memory;
@@ -101,8 +100,9 @@ void set_shared_data();
 /* student.c */
 void invia_invito(); // invia inviti per unirsi al suo gruppo
 list leggi_inviti(list l); // legge la list contenente gli inviti ricevuti
-void init_student(); // inizializza le variabili  dello studente
+void init_student_parameters(); // inizializza le variabili  dello studente
 void handle_signal(int signal);
+void init_ipc_id();
 void goodbye(int i);
 
 /* utility.c */
@@ -110,7 +110,6 @@ int random_between(pid_t seed, int min, int max);
 void init_message_queue(int key_msg_queue);
 void deallocate_msg_queue(int id_message_queue);
 void init_children_semaphore (int key_sem);
-int init_sem_zero(int sem_id, int sem_num);
 int request_resource(int id_sem, int sem_num);
 int relase_resource(int id_sem, int sem_num);
 void init_shared_memory(int key_shmem);

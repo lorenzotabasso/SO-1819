@@ -17,20 +17,6 @@ void init_message_queue(int key_msg_queue){
     printf("(PID:%d)Created message queue with ID: %d\n",getpid(), id_message_queue);
 }
 
-// int get_msg_queue_id(int id_queue){
-//     int ret = msgget(id_queue, 0666);
-//     if (ret == -1) {
-//         PRINT_ERROR;
-//     }
-//     return ret;
-// }
-
-// void send_message(int id_queue, struct message to_send) {
-// 	if (msgsnd(id_queue, &to_send, sizeof(to_send)-sizeof(long), 0) == -1) {
-// 		PRINT_ERROR;
-// 	}
-// }
-
 void deallocate_msg_queue(int id_message_queue){
     if (msgctl(id_message_queue, IPC_RMID, NULL) == -1){
         PRINT_ERROR;
@@ -49,19 +35,12 @@ void init_children_semaphore (int key_sem){
 	printf("Created Children Semaphore and initialized. id_child_sem=%d\n", id_children_semaphore);
 }
 
-int init_sem_zero(int sem_id, int sem_num){
-    union semun arg;
-    arg.val= 0;
-    return semctl(sem_id,sem_num,SETVAL,arg);
-}
-
 int request_resource(int id_sem, int sem_num) {
     struct sembuf lock;
-    lock.sem_num = sem_num;
+    lock.sem_num = (unsigned short) sem_num;
     lock.sem_op=-1;
     lock.sem_flg=0;
     int ret = semop(id_sem, &lock, 1);
-    
     if (ret == -1) {
         PRINT_ERROR;
     }
@@ -70,7 +49,7 @@ int request_resource(int id_sem, int sem_num) {
 
 int relase_resource(int id_sem, int sem_num) {
     struct sembuf unlock;
-    unlock.sem_num = sem_num;
+    unlock.sem_num = (unsigned short) sem_num;
     unlock.sem_op=1;
     unlock.sem_flg=0;
     int ret = semop(id_sem, &unlock, 1);
@@ -82,7 +61,7 @@ int relase_resource(int id_sem, int sem_num) {
 }
 
 void init_shared_memory(int key_shmem) {
-    id_shared_memory = shmget(key_shmem, sizeof(*my_shm), 0666 | IPC_CREAT);
+    id_shared_memory = shmget(key_shmem, sizeof(*shm_pointer), 0666 | IPC_CREAT);
     if (id_shared_memory == -1) {
         PRINT_ERROR;
     }
@@ -100,8 +79,11 @@ void stop_timer() {
 }
 
 void deallocate_IPCs(){
-    for (int i = 0; i < POP_SIZE; i++) {
-        //deallocate_msg_queue(get_msg_queue_id(population[i]));
+//    for (int i = 0; i < POP_SIZE; i++) {
+//        //deallocate_msg_queue(get_msg_queue_id(population[i]));
+//    }
+    if (msgctl(id_message_queue, IPC_RMID, NULL) == -1){
+        PRINT_ERROR;
     }
     if (semctl(id_children_semaphore, 0, IPC_RMID) == -1){
         PRINT_ERROR;
@@ -245,17 +227,18 @@ list rimuovi_studente(list l, int n){
 
 int calc_pref(int pref_2,int pref_3,int pref_4){
     int x;
-    time_t t;
-    srand(getpid());
+    srand((unsigned int) getpid());
     x = rand()%100;
     printf("preferenza gruppo : %d\n",x);
     fflush(stdout);
+    int ret = 0;
 
     if(x >= pref_3 && x <= 100) {
-        return 2;
+        ret = 2;
     } else if(x < pref_3) {
-        return 3;
+        ret = 3;
     } else if(x < pref_4) {
-        return 4;
+        ret = 4;
     }
+    return ret;
 }
