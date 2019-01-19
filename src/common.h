@@ -2,6 +2,9 @@
 #define COMMON_H
 
 #define POP_SIZE 4
+#define DEBUG {printf(RED "\tDEBUG at FILE: %s LINE:%d" RESET "\n", __FILE__, __LINE__);}
+#define PRINT_ERROR    if (errno) {fprintf(stderr, "\t%s:%d: PID=%5d: Error %d (%s)\n", \
+                      __FILE__,    __LINE__, getpid(), errno, strerror(errno));}
 
 #include <unistd.h>
 #include <stdio.h>
@@ -38,23 +41,48 @@
     };
 #endif
 
-struct shared_data {
-    int group_matrix[POP_SIZE][2];
+struct shared_memory {
+    int marks[POP_SIZE][2];
 };
 
-struct message {
+// pointer which will contain the memory
+//address for the matrix of grouped processes
+struct shared_memory * my_shm;
+
+struct sigaction sa; // needed for signal hadling in student
+
+struct my_msg{
     long mtype;
-    char mtext[5];
-};
+    char ask;
+    int ade_voto;
+    int student_id;
+    int pref_gruppo;
+} costrutto;
 
-struct message msg_in_queue;
+struct my_msg2{
+    long mtype;
+    lista gruppo;
+} costrutto2;
 
-#define KEY_CHILDREN_SEM 1
-#define KEY_SHARED_MEM 2
+typedef enum {FALSE,TRUE}bool;
+typedef struct _nodo* lista;
+
+typedef struct _nodo {
+    //char ask; //stringa == il nostro dato
+    int student;
+    int voto_ade;
+    int pref_gruppo;
+    lista nxt; //puntatore al prossimo elemento
+}node;
+
+#define KEY_CHILDREN_SEMAPHORE ftok("manager.c",1)
+#define KEY_MESSAGE_QUEUE ftok("student.c",2)
+#define KEY_MSG_ANSWER ftok("student.c",3)
+#define KEY_SHARED_MEMORY ftok("manager.c",4)
 
 int id_children_semaphore;
 int id_shared_memory;
-int id_msg_queue;
+int id_message_queue;
 
 /* config settings */
 int sim_time;
@@ -67,30 +95,12 @@ int max_reject;
 /* vector of kids PIDs */
 pid_t population[POP_SIZE];
 
-// pointer which will contain the memory 
-//address for the matrix of grouped processes
-struct shared_data * my_data;
-
-#define TEST_ERROR    if (errno) {fprintf(stderr,			\
-					  "\t%s:%d: PID=%5d: Error %d (%s)\n", \
-					  __FILE__,			\
-					  __LINE__,			\
-					  getpid(),			\
-					  errno,			\
-					  strerror(errno));}
-
-#define DEBUG    {printf("\t%s:%d: PID=%5d: Debug!\n", \
-                      __FILE__,         \
-                      __LINE__,         \
-                      getpid());}
-
 /* manager.c */
 void set_shared_data();
 
 /* student.c */
 void set_rand_ade_mark();
 void handle_signal(int signal);
-void set_grouped(int condition);
 
 /* utility.c */
 int random_between(pid_t seed, int min, int max);
