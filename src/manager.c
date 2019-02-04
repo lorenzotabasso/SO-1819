@@ -1,9 +1,6 @@
 #include "common.h"
 
 int main (int argc, char * argv[]) {
-    int status;
-    pid_t child_pid;
-
     int process_voti = POP_SIZE;
 
     // init IPCs
@@ -12,10 +9,9 @@ int main (int argc, char * argv[]) {
 
     //id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE,1,IPC_CREAT|0666);
     id_message_queue = msgget(KEY_MESSAGE_QUEUE,IPC_CREAT | 0666);
-    printf("\tMSG %d\n", id_message_queue);
 
     /* Init sim_parameters */
-    read_conf("src/opt.conf");
+    read_conf(CONF_PATH);
 
     printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
 	for (int i=0; i < POP_SIZE; i++) {
@@ -50,30 +46,32 @@ int main (int argc, char * argv[]) {
 
     //start_timer(3);
 
-    PRINT_ERROR;
-
-    DEBUG;
     while(process_voti > 0){
         DEBUG;
         msgrcv(id_message_queue,&costrutto2,sizeof(costrutto2),getpid(),0666);
-        printf("MSGQUEUEID: %d", id_message_queue);
-        DEBUG;
-        PRINT_ERROR;
         int group_num = costrutto2.group_num;
         int group_elem[group_num][2];
         int max_mark = 0;
-        DEBUG;
+
+        printf(RED "\tPARENT (PID: %d) Received message from student %i" RESET "\n", getpid(), costrutto2.sender);
 
         for (int i=0; i<group_num; i++) {
-            DEBUG;
+
+            if(costrutto2.gruppo == NULL) {
+                DEBUG;
+            } else {
+                DEBUG;
+            }
+
+            stampa_list(costrutto2.gruppo);
             int uno = costrutto2.gruppo->student;
             group_elem[i][0] = uno;
-            DEBUG;
             if (max_mark <= costrutto2.gruppo->voto_ade) {
                 max_mark = costrutto2.gruppo->voto_ade;
             }
             group_elem[i][1] = costrutto2.gruppo->pref_gruppo;
         }
+
         DEBUG;
 
         /*
@@ -92,7 +90,7 @@ int main (int argc, char * argv[]) {
                 group_elem[j][1] = max_mark-3;
             }
         }
-        DEBUG;
+        
 
         // Assegnazione del voto allo studente in shared memory;
         int z = 0;
@@ -108,7 +106,7 @@ int main (int argc, char * argv[]) {
             z++;
         }
     }
-    DEBUG;
+    
 
     //for(int j = 0; j < POP_SIZE; j++) // *2 per via del "doppio blocco" del figlio
     //    relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set

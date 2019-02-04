@@ -30,16 +30,16 @@ int main(int argc, char * argv[]) {
     condition = 1;
 
     request_resource(id_children_semaphore, 0);
-    DEBUG;
+    
 
     while(condition){
         if(invites > 0 && requests == NULL && leader == 1){
             if(group_num <= nof_elem){
-                printf("Sono lo studente %d\n",id_student);
-                printf("Numero inviti : %d\n",invites);
-                printf("%d elementi sui %d desiderati\n",group_num,nof_elem);
+                printf("(PID: %d) Sono lo studente %d\n",getpid(), id_student);
+                printf("(PID: %d) Numero inviti : %d\n", getpid(), invites);
+                printf("(PID: %d) %d elementi sui %d desiderati\n",getpid(), group_num,nof_elem);
 
-                printf("Sono lo studente %d e sto inviando un invito \n", id_student);
+                printf("(PID: %d) Sono lo studente %d e sto inviando un invito \n", getpid(), id_student);
                 if (random_between(getpid(), 0, 1)) {
                     invia_invito();
                 } else {
@@ -63,12 +63,12 @@ int main(int argc, char * argv[]) {
                     requests = inserisci_in_coda(requests,costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                 }
             }
-            DEBUG;
+            
         }
         else if(costrutto.mtype == id_student){
-            DEBUG;
+            
             if(costrutto.ask == 'S') {
-                DEBUG;
+                
                 if(group == NULL){
                     group = crea_nodo(costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                     invites++;
@@ -79,26 +79,28 @@ int main(int argc, char * argv[]) {
                 }
             }
             else if(costrutto.ask == 'N') {
-                DEBUG;
+                
                 invites++;
             }
-            DEBUG;
+            
         }
         requests = leggi_inviti(requests);
     }
 
-    printf(GRN "(%d) Ho finito e aspetto!" RESET "\n", getpid());
-
-
+    if(leader == 1)
+        printf(GRN "(PID: %d)  LEADER Ho finito e aspetto!" RESET "\n", getpid());
+    else
+        printf(GRN "(PID: %d)  NORMAL Ho finito e aspetto!" RESET "\n", getpid());
 
     if(leader == 1){
         costrutto2.mtype = getppid();
+        costrutto2.sender = getpid();
         costrutto2.gruppo = group;
         costrutto2.group_num = group_num;
         msgsnd(id_message_queue,&costrutto2,sizeof(costrutto2),0);
     }
 
-    printf(YEL "SEMAPHORE RES: %d" RESET "\n", semctl(id_children_semaphore, 0, GETVAL));
+    printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
 
     request_resource(id_children_semaphore,0);
 
@@ -110,9 +112,9 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    printf(YEL "Sono lo studente : %d" RESET "\n",id_student);
-    printf("avevo preso %d di archittettura degli elaboratori\n",ade_mark);
-    printf("e ho preso %d di sistemi operativi\n",final_mark);
+    printf(YEL "(PID: %d) Sono lo studente : %d" RESET "\n", getpid(), id_student);
+    printf("(PID: %d) avevo preso %d di archittettura degli elaboratori\n", getpid(), ade_mark);
+    printf("(PID: %d) e ho preso %d di sistemi operativi\n", getpid(), final_mark);
 
 }
 
@@ -123,16 +125,16 @@ void invia_invito(){
     costrutto.ade_voto = ade_mark;
     costrutto.pref_gruppo = nof_elem;
     msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
-    printf("Invito inviato da studente %d \n",id_student);
+    printf("(PID: %d) Invito inviato da studente %d \n",getpid(), id_student);
 }
 
 list leggi_inviti(list inviti){
     while(inviti!=NULL && group_num == 1){
         if(group_num == 1){
             if((*inviti).student%2 == id_student%2 ){
-                printf("Invito ricevuto da parte dello studente %d\n",(*inviti).student);
-                printf("Group_num = %d\n",group_num);
-                printf("Voto = %d\n",(*inviti).voto_ade);
+                printf("(PID: %d) Invito ricevuto da parte dello studente %d\n", getpid(), (*inviti).student);
+                printf("(PID: %d) Group_num = %d\n", getpid(), group_num);
+                printf("(PID: %d) Voto = %d\n",getpid(), (*inviti).voto_ade);
                 if((*inviti).voto_ade >= (30 - scarto_voto)){
                     costrutto.ask = 'S';
                     leader = 0;
@@ -143,7 +145,7 @@ list leggi_inviti(list inviti){
                     costrutto.pref_gruppo = nof_elem;
 
                     msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
-                    printf(GRN "Risposta affermativa da parte dello studente %d allo studente %d" RESET"\n",id_student,(*inviti).student);
+                    printf(GRN "(PID: %d) Risposta affermativa da parte dello studente %d allo studente %d" RESET"\n",getpid(), id_student,(*inviti).student);
                 }
                 else{
                     if(reject>0){
@@ -153,9 +155,9 @@ list leggi_inviti(list inviti){
                         costrutto.ade_voto = ade_mark;
                         costrutto.pref_gruppo = nof_elem;
                         msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
-                        printf("Risposta negativa da parte dello studente %d allo studente %d \n",id_student,(*inviti).student);
+                        printf("(PID: %d) Risposta negativa da parte dello studente %d allo studente %d \n",getpid(), id_student,(*inviti).student);
                         reject--;
-                        printf("Rifiuti rimasti allo studente %d : %d \n",id_student,reject);
+                        printf("(PID: %d) Rifiuti rimasti allo studente %d : %d \n",getpid(), id_student,reject);
 
                         scarto_voto= scarto_voto + 2;
                     }
@@ -168,7 +170,7 @@ list leggi_inviti(list inviti){
                         costrutto.ade_voto = ade_mark;
                         costrutto.pref_gruppo = nof_elem;
                         msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
-                        printf("Risposta affermativa da parte dello studente %d allo studente %d \n",id_student,(*inviti).student);
+                        printf("(PID: %d) Risposta affermativa da parte dello studente %d allo studente %d \n",getpid(), id_student,(*inviti).student);
                     }
                 }
             }
@@ -180,7 +182,7 @@ list leggi_inviti(list inviti){
             costrutto.ade_voto = ade_mark;
             costrutto.pref_gruppo = nof_elem;
             msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
-            printf("Risposta negativa da parte dello studente %d allo studente %d \n",id_student,(*inviti).student);
+            printf("(PID: %d) Risposta negativa da parte dello studente %d allo studente %d \n",getpid(), id_student,(*inviti).student);
             //printf("Rifiuti rimasti allo studente %d : %d \n",id_student,reject);
         }
 
@@ -190,12 +192,12 @@ list leggi_inviti(list inviti){
 }
 
 void handle_signal(int signal) {
-    DEBUG;
-    printf("CHILD (PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
+    
+    printf("(PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
     switch (signal) {
         case SIGALRM:
             condition = 0;
-            DEBUG;
+            
             exit(EXIT_SUCCESS);
             break;
         default:
@@ -204,11 +206,11 @@ void handle_signal(int signal) {
 }
 
 void init_student_parameters(){
-    read_conf("src/opt.conf");
+    read_conf(CONF_PATH);
 
     id_student = getpid();
     leader = 1;
-    printf("ID studente: %d\n",id_student);
+    printf("(PID: %d) ID studente: %d\n",getpid(), id_student);
     requests = NULL;
     invites = nof_invites;
     ade_mark = random_between(getpid(), 18, 30);
@@ -238,6 +240,6 @@ void init_ipc_id(){
 }
 
 void goodbye(){
-    printf("CHILD (PID: %d): goodbye cruel word!\n", getpid());
+    printf("(PID: %d): goodbye cruel word!\n", getpid());
     exit(EXIT_SUCCESS);
 }

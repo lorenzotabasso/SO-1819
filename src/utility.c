@@ -21,7 +21,7 @@ void deallocate_msg_queue(int id_message_queue){
     if (msgctl(id_message_queue, IPC_RMID, NULL) == -1){
         PRINT_ERROR;
     }
-    printf("Message queue with ID: %d deallocated\n", id_message_queue);
+    printf("(PID: %d) Message queue with ID: %d deallocated\n", getpid(), id_message_queue);
 }
 
 void init_children_semaphore (int key_sem){
@@ -32,7 +32,7 @@ void init_children_semaphore (int key_sem){
 	if (semctl(id_children_semaphore, 0, SETVAL, 0) == -1) {
 		PRINT_ERROR;
 	}
-	printf("Created Children Semaphore and initialized. id_child_sem=%d\n", id_children_semaphore);
+	printf("(PID: %d) Created Children Semaphore and initialized. id_child_sem=%d\n", getpid(), id_children_semaphore);
 }
 
 int request_resource(int id_sem, int sem_num) {
@@ -65,7 +65,7 @@ void init_shared_memory(int key_shmem) {
     if (id_shared_memory == -1) {
         PRINT_ERROR;
     }
-    printf("Shared memory initialized with ID: %d\n", id_shared_memory);
+    printf("(PID: %d) Shared memory initialized with ID: %d\n", getpid(), id_shared_memory);
 }
 
 void start_timer(){
@@ -73,8 +73,8 @@ void start_timer(){
 }
 
 void stop_timer() {
-    DEBUG;
-    printf("\nTIMEOUT!\n");
+    
+    printf("\n(PID: %d) TIMEOUT!\n", getpid());
     kill(0, SIGALRM); // kill everyone
 }
 
@@ -91,14 +91,14 @@ void deallocate_IPCs(){
     if (shmctl(id_shared_memory, IPC_RMID, NULL) == -1) {
         PRINT_ERROR;
     }
-    printf ("IPCs deallocated successfully.\n");
+    printf ("(PID: %d) IPCs deallocated successfully.\n", getpid());
 }
 
 void read_conf(char * config_path){
     int max = 100;
     char line[max];
     FILE *config_fp = fopen(config_path, "r");
-
+    
     if (config_fp == NULL){
         PRINT_ERROR;
     }
@@ -150,7 +150,8 @@ void read_conf(char * config_path){
         if (sim_time < 0)
             PRINT_ERROR;
     }
-    printf("Config loaded.\n");
+    
+    printf("(PID: %d) Config loaded.\n", getpid());
 }
 
 // UTILITY su srutture dati ---------------------------------------------------
@@ -229,7 +230,7 @@ int calc_pref(int pref_2,int pref_3,int pref_4){
     int x;
     srand((unsigned int) getpid());
     x = rand()%100;
-    printf("preferenza gruppo : %d\n",x);
+    printf("(PID: %d) preferenza gruppo : %d\n", getpid(), x);
     fflush(stdout);
     int ret = 0;
 

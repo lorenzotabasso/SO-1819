@@ -30,6 +30,8 @@
 #define WHT   "\x1B[37m"
 #define RESET "\x1B[0m"
 
+#define CONF_PATH "/Volumes/HDD/Lorenzo/Unito/2 Anno/SO/Progetto/PAC/so-18-19/src/opt.conf"
+
 #if defined(__linux__)
     union semun {
         int val;
@@ -72,13 +74,14 @@ struct my_msg{
 
 struct my_msg2{
     long mtype;
+    int sender;
     int group_num;
     list gruppo;
 } costrutto2;
 
-#define KEY_CHILDREN_SEMAPHORE ftok("manager.c",1)
-#define KEY_MESSAGE_QUEUE ftok("student.c",2)
-#define KEY_SHARED_MEMORY ftok("manager.c",3)
+#define KEY_CHILDREN_SEMAPHORE ftok("src/manager.c",1)
+#define KEY_MESSAGE_QUEUE ftok("src/student.c",2)
+#define KEY_SHARED_MEMORY ftok("src/manager.c",3)
 
 int id_children_semaphore;
 int id_shared_memory;
