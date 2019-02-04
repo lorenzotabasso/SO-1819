@@ -2,7 +2,7 @@
 #define COMMON_H
 
 #define POP_SIZE 4
-#define DEBUG {printf(RED "\tDEBUG at FILE: %s LINE:%d" RESET "\n", __FILE__, __LINE__);}
+#define DEBUG {printf(RED "\t(%d) DEBUG at FILE: %s LINE:%d" RESET "\n", getpid(), __FILE__, __LINE__);}
 #define PRINT_ERROR if (errno) {fprintf(stderr, "\t%s:%d: PID=%5d: Error %d (%s)\n", \
                       __FILE__,    __LINE__, getpid(), errno, strerror(errno));}
 
@@ -103,7 +103,7 @@ list leggi_inviti(list l); // legge la list contenente gli inviti ricevuti
 void init_student_parameters(); // inizializza le variabili  dello studente
 void handle_signal(int signal);
 void init_ipc_id();
-void goodbye(int i);
+void goodbye();
 
 /* utility.c */
 int random_between(pid_t seed, int min, int max);

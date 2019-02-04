@@ -15,7 +15,6 @@ int main (int argc, char * argv[]) {
     
     /* Init sim_parameters */
     read_conf("src/opt.conf");
-    //start_timer();
 
     printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
 	for (int i=0; i < POP_SIZE; i++) {
@@ -42,6 +41,12 @@ int main (int argc, char * argv[]) {
 	 */
 	for(int j = 0; j < POP_SIZE*2; j++) // *2 per via del "doppio blocco" del figlio
 		relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
+
+    // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria 
+    // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
+    set_shared_data();
+
+    start_timer(3);
 
     while(process_voti > 0){
         msgrcv(id_message_queue,&costrutto2,sizeof(costrutto2),getpid(),0666);
@@ -81,16 +86,10 @@ int main (int argc, char * argv[]) {
         }
     }
 
-	// ATTENZIONE: NECESSARIO che questo frammento di codice della memoria 
-	// condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
-	set_shared_data();
-
 	// waiting for all child proceses
 	while ((child_pid = wait(&status)) > 0);
 	
 	printf("PARENT (PID=%d): done with waiting.\n", getpid());
-
-    //signal(SIGALRM, stop_timer); // SIGALRM handler, it stops the timer.
 
     shmdt(shm_pointer); // detaching shared memory
 
@@ -114,6 +113,8 @@ void set_shared_data(){
     for (int i = 0; i < POP_SIZE; i++) {
         shm_pointer->marks[i][0] = population[i];
         shm_pointer->marks[i][1] = 0;
+        printf("[%d,", shm_pointer->marks[i][0]);
+        printf("%d]\n", shm_pointer->marks[i][1]);
     }
     printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
 }

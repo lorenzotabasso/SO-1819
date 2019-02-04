@@ -73,9 +73,9 @@ void start_timer(){
 }
 
 void stop_timer() {
-    sleep(1);
-    printf("Timeout!\n\n");
-    kill(0, SIGCONT); // kill everyone
+    DEBUG;
+    printf("\nTIMEOUT!\n");
+    kill(0, SIGALRM); // kill everyone
 }
 
 void deallocate_IPCs(){

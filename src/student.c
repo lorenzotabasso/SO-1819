@@ -183,10 +183,13 @@ list leggi_inviti(list inviti){
 }
 
 void handle_signal(int signal) {
+    DEBUG;
     printf("CHILD (PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
     switch (signal) {
         case SIGALRM:
             condition = 0;
+            DEBUG;
+            exit(EXIT_SUCCESS);
             break;
         default:
             break;
@@ -227,8 +230,7 @@ void init_ipc_id(){
     }
 }
 
-void goodbye(int i){
+void goodbye(){
     printf("CHILD (PID: %d): goodbye cruel word!\n", getpid());
-    printf("\tContinuing - 2\n");
     exit(EXIT_SUCCESS);
 }
