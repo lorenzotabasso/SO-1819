@@ -30,7 +30,8 @@ int main(int argc, char * argv[]) {
     condition = 1;
 
     request_resource(id_children_semaphore, 0);
-    
+    DEBUG;
+
     while(condition){
         if(invites > 0 && requests == NULL && leader == 1){
             if(group_num <= nof_elem){
@@ -86,15 +87,21 @@ int main(int argc, char * argv[]) {
         requests = leggi_inviti(requests);
     }
 
-    printf(GRN "Ho finito e aspetto!" RESET "\n");
+    printf(GRN "(%d) Ho finito e aspetto!" RESET "\n", getpid());
 
-    request_resource(id_children_semaphore,0);
+
 
     if(leader == 1){
         costrutto2.mtype = getppid();
         costrutto2.gruppo = group;
+        costrutto2.group_num = group_num;
         msgsnd(id_message_queue,&costrutto2,sizeof(costrutto2),0);
     }
+
+    printf(YEL "SEMAPHORE RES: %d" RESET "\n", semctl(id_children_semaphore, 0, GETVAL));
+
+    request_resource(id_children_semaphore,0);
+
     int vero = 1;
     for(int i = 0;i<=POP_SIZE && vero; i++){
         if(shm_pointer->marks[i][1] == id_student){

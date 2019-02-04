@@ -3,7 +3,7 @@
 int main (int argc, char * argv[]) {
     int status;
     pid_t child_pid;
-    
+
     int process_voti = POP_SIZE;
 
     // init IPCs
@@ -12,7 +12,8 @@ int main (int argc, char * argv[]) {
 
     //id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE,1,IPC_CREAT|0666);
     id_message_queue = msgget(KEY_MESSAGE_QUEUE,IPC_CREAT | 0666);
-    
+    printf("\tMSG %d\n", id_message_queue);
+
     /* Init sim_parameters */
     read_conf("src/opt.conf");
 
@@ -26,72 +27,101 @@ int main (int argc, char * argv[]) {
 			case 0:
 				/* CHILD CODE */
 				execve("bin/student", argv, NULL);
-				
+
 			default:
 				/* PARENT CODE */
 				printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), population[i]);
 		}
 	}
-		
+
 	/* PARENT CODE: the child processes exited already */
 
-	/* after the creation of child, parent add POP_SIZE resource to the 
-	 * semaphore of children, in order to unblock them and to start the 
+	/* after the creation of child, parent add POP_SIZE resource to the
+	 * semaphore of children, in order to unblock them and to start the
 	 * simulation
 	 */
-	for(int j = 0; j < POP_SIZE*2; j++) // *2 per via del "doppio blocco" del figlio
-		relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
-
-    // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria 
+     for(int j = 0; j < POP_SIZE; j++){
+        relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
+        printf(GRN "PARENT, PUTTING RES" RESET "\n");
+    }
+    // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria
     // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
     set_shared_data();
 
-    start_timer(3);
+    //start_timer(3);
 
+    PRINT_ERROR;
+
+    DEBUG;
     while(process_voti > 0){
+        DEBUG;
         msgrcv(id_message_queue,&costrutto2,sizeof(costrutto2),getpid(),0666);
-        int i = 0;
-        int group_elem[POP_SIZE][2];
+        printf("MSGQUEUEID: %d", id_message_queue);
+        DEBUG;
+        PRINT_ERROR;
+        int group_num = costrutto2.group_num;
+        int group_elem[group_num][2];
         int max_mark = 0;
+        DEBUG;
 
-        while (costrutto2.gruppo->nxt != NULL) {
-            group_elem[i][0] = costrutto2.gruppo->student;
+        for (int i=0; i<group_num; i++) {
+            DEBUG;
+            int uno = costrutto2.gruppo->student;
+            group_elem[i][0] = uno;
+            DEBUG;
             if (max_mark <= costrutto2.gruppo->voto_ade) {
                 max_mark = costrutto2.gruppo->voto_ade;
             }
             group_elem[i][1] = costrutto2.gruppo->pref_gruppo;
-            i++;
         }
+        DEBUG;
 
-        for (int j=0; j<=3 && group_elem[j][0] != 0; j++) {
-            if (group_elem[j][1] == i) {
+        /*
+        Da "VOTO DEL PROGETTO" nel testo:
+        il voto di tutti gli studenti di un gruppo chiuso è determinato dal valore
+        massimo del campo voto_AdE fra gli studenti del gruppo. A tale valore
+        si sottraggono 3 punti nel caso in cui lo studente del gruppo si ritrovi a
+        far parte di un gruppo che ha un numero di elementi diverso dal proprio
+        obiettivo (specificato da nof_elems)
+        */
+
+        for (int j=0; j<=group_num && group_elem[j][0] != 0; j++) {
+            if (group_elem[j][1] == group_num) {
                 group_elem[j][1] = max_mark;
             } else {
                 group_elem[j][1] = max_mark-3;
             }
         }
+        DEBUG;
 
-        int found;
-        int i1 = 0;
-        for (int k = 0; k < POP_SIZE; k++) {
-            found = 1;
-            while(found) {
-                if(group_elem[i1][0] == shm_pointer->marks[i1][0]){
-                    shm_pointer->marks[i1][1] = group_elem[i1][1];
-                    found = 0;
+        // Assegnazione del voto allo studente in shared memory;
+        int z = 0;
+        int found = 1;
+        while(z<group_num ) {
+            for(int k = 0; k < POP_SIZE && found; k++) {
+                if(group_elem[z][0] == shm_pointer->marks[k][0]){
+                    shm_pointer->marks[k][1] = group_elem[z][1];
                     process_voti--; // CONDIZIONE USCITA WHILE ESTERNO
+                    found = 0;
                 }
-                i1++;
             }
+            z++;
         }
     }
+    DEBUG;
+
+    //for(int j = 0; j < POP_SIZE; j++) // *2 per via del "doppio blocco" del figlio
+    //    relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
 
 	// waiting for all child proceses
-	while ((child_pid = wait(&status)) > 0);
-	
+	//while ((child_pid = wait(&status)) > 0);
+    for (int i = 0; i < POP_SIZE; i++) {
+        wait(0);
+    }
+
 	printf("PARENT (PID=%d): done with waiting.\n", getpid());
 
-    shmdt(shm_pointer); // detaching shared memory
+    //shmdt(shm_pointer); // detaching shared memory
 
     deallocate_IPCs();
 

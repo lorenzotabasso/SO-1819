@@ -72,6 +72,7 @@ struct my_msg{
 
 struct my_msg2{
     long mtype;
+    int group_num;
     list gruppo;
 } costrutto2;
 
