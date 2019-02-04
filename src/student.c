@@ -30,7 +30,6 @@ int main(int argc, char * argv[]) {
     condition = 1;
 
     request_resource(id_children_semaphore, 0);
-    
 
     while(condition){
         if(invites > 0 && requests == NULL && leader == 1){
@@ -63,10 +62,8 @@ int main(int argc, char * argv[]) {
                     requests = inserisci_in_coda(requests,costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                 }
             }
-            
         }
         else if(costrutto.mtype == id_student){
-            
             if(costrutto.ask == 'S') {
                 
                 if(group == NULL){
@@ -79,10 +76,8 @@ int main(int argc, char * argv[]) {
                 }
             }
             else if(costrutto.ask == 'N') {
-                
                 invites++;
             }
-            
         }
         requests = leggi_inviti(requests);
     }
@@ -192,7 +187,6 @@ list leggi_inviti(list inviti){
 }
 
 void handle_signal(int signal) {
-    
     printf("(PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
     switch (signal) {
         case SIGALRM:
