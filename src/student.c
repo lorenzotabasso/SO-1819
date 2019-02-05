@@ -61,51 +61,30 @@ int main(int argc, char * argv[]) {
         //     condition = 0;
         // }
 
-        DEBUG;
         msgrcv(id_message_queue,&costrutto,sizeof(costrutto),0,0);
-        if (costrutto.ask == 'W'){
-            DEBUG;
-        } else {
-            DEBUG;
-        }
 
         if(costrutto.mtype != id_student && group_num == 1) {
-            DEBUG;
             if(costrutto.ask =='W'){
-                DEBUG;
                 if(requests == NULL) {
-                    DEBUG;
                     requests = crea_nodo(costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                 }
                 else {
-                    DEBUG;
                     requests = inserisci_in_coda(requests,costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                 }
             }
-
-            DEBUG;
         }
         else if(costrutto.mtype == id_student){
-            DEBUG;
             if(costrutto.ask == 'S') {
-                    DEBUG;
                     group = inserisci_in_coda(group,costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                     invites++;
                     group_num++;
 
             }
             else if(costrutto.ask == 'N') {
-                DEBUG;
                 invites++;
             }
         }
         requests = leggi_inviti(requests);
-        if (requests != NULL) { // DEBUG
-            DEBUG;
-        }
-        else {
-            DEBUG;
-        }
     } // End while
 
     if(leader == 1)
@@ -121,8 +100,11 @@ int main(int argc, char * argv[]) {
         stampa_list(costrutto2.gruppo);
         costrutto2.group_nums = group_num;
         printf("group num: %d\n",costrutto2.group_nums);
+        printf("\t\tMessage_queue_id_parent: %d\n", id_message_queue_parent);
         msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
     }
+
+    kill(getppid(), SIGUSR1);
 
     printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
 
@@ -155,16 +137,12 @@ void invia_invito(){
 
 list leggi_inviti(list inviti){
     while(inviti!=NULL){
-        DEBUG;
         if(group_num == 1){
-            DEBUG;
             if((*inviti).student%2 == id_student%2 ){
-                DEBUG;
                 printf(GRN "(PID: %d) Invito ricevuto da parte dello studente %d" RESET "\n", getpid(), (*inviti).student);
                 printf("(PID: %d) Group_num = %d\n", getpid(), group_num);
                 printf("(PID: %d) Voto = %d\n",getpid(), (*inviti).voto_ade);
                 if((*inviti).voto_ade >= (30 - scarto_voto)){
-                    DEBUG;
                     costrutto.ask = 'S';
                     leader = 0;
                     group_num++;
@@ -177,9 +155,7 @@ list leggi_inviti(list inviti){
                     printf(GRN "(PID: %d) Risposta affermativa da parte dello studente %d allo studente %d" RESET"\n",getpid(), id_student,(*inviti).student);
                 }
                 else{
-                    DEBUG;
                     if(reject>0){
-                        DEBUG;
                         costrutto.mtype=(*inviti).student;
                         costrutto.student_id = id_student;
                         costrutto.ask = 'N';
@@ -193,7 +169,6 @@ list leggi_inviti(list inviti){
                         scarto_voto= scarto_voto + 2;
                     }
                     else{
-                        DEBUG;
                         leader = 0;
                         costrutto.ask = 'S';
                         group_num++;
@@ -206,14 +181,8 @@ list leggi_inviti(list inviti){
                     }
                 }
             }
-
-            // MANCA CASISTICA, il leader salta dall'inizio dell'IF
-            // a qui senza passare per nessun caso intermedio!
-
-            DEBUG;
         }
         else{
-            DEBUG;
             costrutto.mtype=(*inviti).student;
             costrutto.student_id = id_student;
             costrutto.ask = 'N';
@@ -226,7 +195,6 @@ list leggi_inviti(list inviti){
 
         inviti = rimuovi_in_testa(inviti);
     } // end while
-    DEBUG;
     return inviti;
 }
 
