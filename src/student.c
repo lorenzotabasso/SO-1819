@@ -16,13 +16,16 @@ int final_mark; // esito finale
 
 int reject; // numero di rifiuti effettuati
 int id_student;
+void stud_handler();
 //*************//
 
  // TODO: problemi di concorrenza tra i tipi di messaggi!
 
 int main(int argc, char * argv[]) {
-    sa.sa_handler = handle_signal;
-    sa.sa_flags = 0;
+    // sa.sa_handler = handle_signal;
+    // sa.sa_flags = 0;
+
+    signal(SIGCONT, stud_handler);
 
     init_ipc_id();
 
@@ -46,7 +49,14 @@ int main(int argc, char * argv[]) {
                 }
                 //invites--; // TODO: Errore! spostare in invia_invito()
             }
+            // else { // ELSE nel punto giusto!!
+            //     printf(YEL"(PID: %d) numero inviti: %d"RESET"\n", getpid(), invites);
+            //     condition = 0;
+            // }
         }
+        // if(group_num == nof_elem){
+        //     condition = 0;
+        // }
         // else {
         //     condition = 0;
         // }
@@ -73,36 +83,30 @@ int main(int argc, char * argv[]) {
                 }
             }
 
-            // MANCA CASISTICA! il proceso leader non riceve un messaggio
-            // con ask == W!
-
             DEBUG;
         }
         else if(costrutto.mtype == id_student){
             DEBUG;
             if(costrutto.ask == 'S') {
-                if(group == NULL){
-                    group = crea_nodo(costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
-                    invites++;
-                }
-                else{
+                    DEBUG;
                     group = inserisci_in_coda(group,costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                     invites++;
-                }
+                    group_num++;
+
             }
             else if(costrutto.ask == 'N') {
+                DEBUG;
                 invites++;
             }
         }
         requests = leggi_inviti(requests);
-        if (requests != NULL) {
-            condition = 0;
+        if (requests != NULL) { // DEBUG
+            DEBUG;
         }
         else {
             DEBUG;
-            condition = 0;
         }
-    }
+    } // End while
 
     if(leader == 1)
         printf(GRN "(PID: %d)  LEADER Ho finito e aspetto!" RESET "\n", getpid());
@@ -111,10 +115,13 @@ int main(int argc, char * argv[]) {
 
     if(leader == 1){
         costrutto2.mtype = getppid();
-        costrutto2.sender = getpid();
+        costrutto2.sender = id_student;
+        printf("sender : %d\n",costrutto2.sender);
         costrutto2.gruppo = group;
-        costrutto2.group_num = group_num;
-        msgsnd(id_message_queue,&costrutto2,sizeof(costrutto2),0);
+        stampa_list(costrutto2.gruppo);
+        costrutto2.group_nums = group_num;
+        printf("group num: %d\n",costrutto2.group_nums);
+        msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
     }
 
     printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
@@ -147,7 +154,7 @@ void invia_invito(){
 }
 
 list leggi_inviti(list inviti){
-    while(inviti!=NULL && group_num == 1){
+    while(inviti!=NULL){
         DEBUG;
         if(group_num == 1){
             DEBUG;
@@ -226,13 +233,11 @@ list leggi_inviti(list inviti){
 void handle_signal(int signal) {
     printf("(PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
     switch (signal) {
-        case SIGALRM:
+        case SIGCONT:
             condition = 0;
-            
-            exit(EXIT_SUCCESS);
-            break;
+            DEBUG;
         default:
-            break;
+            DEBUG;
     }
 }
 
@@ -247,7 +252,7 @@ void init_student_parameters(){
     ade_mark = random_between(getpid(), 18, 30);
     nof_elem = calc_pref(dev_preference_2,dev_preference_3,dev_preference_4 );
     final_mark = 0;
-    group = NULL;
+    group = crea_nodo(id_student, ade_mark, nof_elem);
     group_num = 1;
     scarto_voto=0;
     reject = max_reject;
@@ -259,7 +264,7 @@ void init_ipc_id(){
 
     // message queue
     init_message_queue(KEY_MESSAGE_QUEUE);
-
+    id_message_queue_parent = msgget(KEY_MESSAGE_QUEUE_PARENT,IPC_CREAT | 0666);
     // shared memory
     id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*shm_pointer), 0666 | IPC_CREAT);
 
@@ -268,6 +273,10 @@ void init_ipc_id(){
     if (shm_pointer == (void *) -1) {
         PRINT_ERROR;
     }
+}
+
+void stud_handler(){
+    condition = 0;
 }
 
 void goodbye(){

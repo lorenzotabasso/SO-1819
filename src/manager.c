@@ -8,7 +8,7 @@ int main (int argc, char * argv[]) {
     init_shared_memory(KEY_SHARED_MEMORY);
 
     //id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE,1,IPC_CREAT|0666);
-    id_message_queue = msgget(KEY_MESSAGE_QUEUE,IPC_CREAT | 0666);
+    id_message_queue_parent = msgget(KEY_MESSAGE_QUEUE_PARENT,IPC_CREAT | 0666);
 
     /* Init sim_parameters */
     read_conf(CONF_PATH);
@@ -32,6 +32,10 @@ int main (int argc, char * argv[]) {
 
 	/* PARENT CODE: the child processes exited already */
 
+    // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria
+    // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
+    set_shared_data();
+
 	/* after the creation of child, parent add POP_SIZE resource to the
 	 * semaphore of children, in order to unblock them and to start the
 	 * simulation
@@ -40,39 +44,49 @@ int main (int argc, char * argv[]) {
         relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
         printf(GRN "PARENT, PUTTING RES" RESET "\n");
     }
-    // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria
-    // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
-    set_shared_data();
 
-    //start_timer(3);
+    signal(SIGALRM, test);
+    start_timer(5);
 
     while(process_voti > 0){
         DEBUG;
-        msgrcv(id_message_queue,&costrutto2,sizeof(costrutto2),getpid(),0666);
-        int group_num = costrutto2.group_num;
-        int group_elem[group_num][2];
+        msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),getpid(),0);
+        int sender1 = costrutto2.sender;
+        list gruppo1 = costrutto2.gruppo;
+        int group_num1 = costrutto2.group_nums;
+
+        // NON si toccano, servono per le computazioni
+        int group_elem[group_num1][2];
         int max_mark = 0;
 
-        printf(RED "\tPARENT (PID: %d) Received message from student %i" RESET "\n", getpid(), costrutto2.sender);
-
-        for (int i=0; i<group_num; i++) {
-
-            if(costrutto2.gruppo == NULL) {
-                DEBUG;
-            } else {
-                DEBUG;
-            }
-
-            stampa_list(costrutto2.gruppo);
-            int uno = costrutto2.gruppo->student;
-            group_elem[i][0] = uno;
-            if (max_mark <= costrutto2.gruppo->voto_ade) {
-                max_mark = costrutto2.gruppo->voto_ade;
-            }
-            group_elem[i][1] = costrutto2.gruppo->pref_gruppo;
+        if(gruppo1 == NULL) {
+            DEBUG;
+        } else {
+            DEBUG;
         }
 
+        if(group_num1 == 0) {
+            DEBUG;
+        } else {
+            DEBUG;
+        }
+
+        printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),sender1);
+
         DEBUG;
+        for (int i=0; i<group_num1 && gruppo1 != NULL; i++) {
+            DEBUG;
+            //stampa_list(costrutto2.gruppo);
+            //printf("\t%d\n", costrutto2.gruppo->student);
+            group_elem[i][0] = gruppo1->student;
+            if (max_mark <= gruppo1->voto_ade) {
+                max_mark = gruppo1->voto_ade;
+            }
+            DEBUG;
+            group_elem[i][1] = gruppo1->pref_gruppo;
+            DEBUG;
+            gruppo1 = gruppo1->nxt;
+        }
 
         /*
         Da "VOTO DEL PROGETTO" nel testo:
@@ -82,20 +96,20 @@ int main (int argc, char * argv[]) {
         far parte di un gruppo che ha un numero di elementi diverso dal proprio
         obiettivo (specificato da nof_elems)
         */
-
-        for (int j=0; j<=group_num && group_elem[j][0] != 0; j++) {
-            if (group_elem[j][1] == group_num) {
+        DEBUG;
+        for (int j=0; j<=group_num1 && group_elem[j][0] != 0; j++) {
+            if (group_elem[j][1] == group_num1) {
                 group_elem[j][1] = max_mark;
             } else {
                 group_elem[j][1] = max_mark-3;
             }
         }
-        
 
+        DEBUG;
         // Assegnazione del voto allo studente in shared memory;
         int z = 0;
         int found = 1;
-        while(z<group_num ) {
+        while(z < group_num1) {
             for(int k = 0; k < POP_SIZE && found; k++) {
                 if(group_elem[z][0] == shm_pointer->marks[k][0]){
                     shm_pointer->marks[k][1] = group_elem[z][1];
@@ -105,8 +119,9 @@ int main (int argc, char * argv[]) {
             }
             z++;
         }
+        DEBUG;
     }
-    
+
 
     //for(int j = 0; j < POP_SIZE; j++) // *2 per via del "doppio blocco" del figlio
     //    relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
@@ -140,9 +155,13 @@ void set_shared_data(){
     printf("PARENT (PID=%d): Initializing shared memory matrix.\n", getpid());
     for (int i = 0; i < POP_SIZE; i++) {
         shm_pointer->marks[i][0] = population[i];
-        shm_pointer->marks[i][1] = 0;
+        shm_pointer->marks[i][1] = 2;
         printf("[%d,", shm_pointer->marks[i][0]);
         printf("%d]\n", shm_pointer->marks[i][1]);
     }
     printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
+}
+
+void test(){
+    kill(0,SIGCONT);
 }

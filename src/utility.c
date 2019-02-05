@@ -53,7 +53,7 @@ int relase_resource(int id_sem, int sem_num) {
     unlock.sem_op=1;
     unlock.sem_flg=0;
     int ret = semop(id_sem, &unlock, 1);
-    
+
     if (ret == -1){
         PRINT_ERROR;
     }
@@ -73,9 +73,8 @@ void start_timer(){
 }
 
 void stop_timer() {
-    
     printf("\n(PID: %d) TIMEOUT!\n", getpid());
-    kill(0, SIGALRM); // kill everyone
+    kill(0, SIGCONT); // kill everyone
 }
 
 void deallocate_IPCs(){
@@ -98,7 +97,7 @@ void read_conf(char * config_path){
     int max = 100;
     char line[max];
     FILE *config_fp = fopen(config_path, "r");
-    
+
     if (config_fp == NULL){
         PRINT_ERROR;
     }
@@ -150,7 +149,7 @@ void read_conf(char * config_path){
         if (sim_time < 0)
             PRINT_ERROR;
     }
-    
+
     printf("(PID: %d) Config loaded.\n", getpid());
 }
 

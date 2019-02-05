@@ -60,6 +60,7 @@ struct _node {
     //char ask; //stringa == il nostro dato
     int student;
     int voto_ade;
+    int group_num;
     int pref_gruppo;
     list nxt; //puntatore al prossimo elemento
 };
@@ -75,18 +76,19 @@ struct my_msg{
 struct my_msg2{
     long mtype;
     int sender;
-    int group_num;
+    int group_nums;
     list gruppo;
 } costrutto2;
 
 #define KEY_CHILDREN_SEMAPHORE ftok("src/manager.c",1)
-#define KEY_MESSAGE_QUEUE ftok("src/student.c",2)
+#define KEY_MESSAGE_QUEUE ftok("src/manager.c",2)
 #define KEY_SHARED_MEMORY ftok("src/manager.c",3)
+#define KEY_MESSAGE_QUEUE_PARENT ftok("src/manager.c",4)
 
 int id_children_semaphore;
 int id_shared_memory;
 int id_message_queue;
-
+int id_message_queue_parent;
 /* config settings */
 int sim_time;
 int dev_preference_2;
@@ -100,6 +102,7 @@ pid_t population[POP_SIZE];
 
 /* manager.c */
 void set_shared_data();
+void test();
 
 /* student.c */
 void invia_invito(); // invia inviti per unirsi al suo gruppo
