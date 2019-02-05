@@ -14,7 +14,7 @@ void init_message_queue(int key_msg_queue){
     if (id_message_queue == -1) {
         PRINT_ERROR;
     }
-    printf("(PID:%d)Created message queue with ID: %d\n",getpid(), id_message_queue);
+    printf("(PID: %d) Created message queue with ID: %d\n",getpid(), id_message_queue);
 }
 
 void deallocate_msg_queue(int id_message_queue){

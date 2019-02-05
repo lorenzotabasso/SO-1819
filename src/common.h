@@ -30,7 +30,7 @@
 #define WHT   "\x1B[37m"
 #define RESET "\x1B[0m"
 
-#define CONF_PATH "/Volumes/HDD/Lorenzo/Unito/2 Anno/SO/Progetto/PAC/so-18-19/src/opt.conf"
+#define CONF_PATH "src/opt.conf"
 
 #if defined(__linux__)
     union semun {

@@ -44,28 +44,43 @@ int main(int argc, char * argv[]) {
                 } else {
                     sleep(1);
                 }
-                invites--;
+                //invites--; // TODO: Errore! spostare in invia_invito()
             }
         }
-        else {
-            condition = 0;
+        // else {
+        //     condition = 0;
+        // }
+
+        DEBUG;
+        msgrcv(id_message_queue,&costrutto,sizeof(costrutto),0,0);
+        if (costrutto.ask == 'W'){
+            DEBUG;
+        } else {
+            DEBUG;
         }
 
-        msgrcv(id_message_queue,&costrutto,sizeof(costrutto),0,0666);
-
-        if(group_num == 1 && costrutto.mtype != id_student) {
+        if(costrutto.mtype != id_student && group_num == 1) {
+            DEBUG;
             if(costrutto.ask =='W'){
+                DEBUG;
                 if(requests == NULL) {
+                    DEBUG;
                     requests = crea_nodo(costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                 }
                 else {
+                    DEBUG;
                     requests = inserisci_in_coda(requests,costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                 }
             }
+
+            // MANCA CASISTICA! il proceso leader non riceve un messaggio
+            // con ask == W!
+
+            DEBUG;
         }
         else if(costrutto.mtype == id_student){
+            DEBUG;
             if(costrutto.ask == 'S') {
-                
                 if(group == NULL){
                     group = crea_nodo(costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
                     invites++;
@@ -80,6 +95,13 @@ int main(int argc, char * argv[]) {
             }
         }
         requests = leggi_inviti(requests);
+        if (requests != NULL) {
+            condition = 0;
+        }
+        else {
+            DEBUG;
+            condition = 0;
+        }
     }
 
     if(leader == 1)
@@ -121,16 +143,21 @@ void invia_invito(){
     costrutto.pref_gruppo = nof_elem;
     msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
     printf("(PID: %d) Invito inviato da studente %d \n",getpid(), id_student);
+    invites--;
 }
 
 list leggi_inviti(list inviti){
     while(inviti!=NULL && group_num == 1){
+        DEBUG;
         if(group_num == 1){
+            DEBUG;
             if((*inviti).student%2 == id_student%2 ){
-                printf("(PID: %d) Invito ricevuto da parte dello studente %d\n", getpid(), (*inviti).student);
+                DEBUG;
+                printf(GRN "(PID: %d) Invito ricevuto da parte dello studente %d" RESET "\n", getpid(), (*inviti).student);
                 printf("(PID: %d) Group_num = %d\n", getpid(), group_num);
                 printf("(PID: %d) Voto = %d\n",getpid(), (*inviti).voto_ade);
                 if((*inviti).voto_ade >= (30 - scarto_voto)){
+                    DEBUG;
                     costrutto.ask = 'S';
                     leader = 0;
                     group_num++;
@@ -143,20 +170,23 @@ list leggi_inviti(list inviti){
                     printf(GRN "(PID: %d) Risposta affermativa da parte dello studente %d allo studente %d" RESET"\n",getpid(), id_student,(*inviti).student);
                 }
                 else{
+                    DEBUG;
                     if(reject>0){
+                        DEBUG;
                         costrutto.mtype=(*inviti).student;
                         costrutto.student_id = id_student;
                         costrutto.ask = 'N';
                         costrutto.ade_voto = ade_mark;
                         costrutto.pref_gruppo = nof_elem;
                         msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
-                        printf("(PID: %d) Risposta negativa da parte dello studente %d allo studente %d \n",getpid(), id_student,(*inviti).student);
+                        printf(RED "(PID: %d) Risposta negativa da parte dello studente %d allo studente %d" RESET "\n",getpid(), id_student,(*inviti).student);
                         reject--;
                         printf("(PID: %d) Rifiuti rimasti allo studente %d : %d \n",getpid(), id_student,reject);
 
                         scarto_voto= scarto_voto + 2;
                     }
                     else{
+                        DEBUG;
                         leader = 0;
                         costrutto.ask = 'S';
                         group_num++;
@@ -165,12 +195,18 @@ list leggi_inviti(list inviti){
                         costrutto.ade_voto = ade_mark;
                         costrutto.pref_gruppo = nof_elem;
                         msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
-                        printf("(PID: %d) Risposta affermativa da parte dello studente %d allo studente %d \n",getpid(), id_student,(*inviti).student);
+                        printf(YEL "(PID: %d) Risposta affermativa da parte dello studente %d allo studente %d" RESET "\n",getpid(), id_student,(*inviti).student);
                     }
                 }
             }
+
+            // MANCA CASISTICA, il leader salta dall'inizio dell'IF
+            // a qui senza passare per nessun caso intermedio!
+
+            DEBUG;
         }
         else{
+            DEBUG;
             costrutto.mtype=(*inviti).student;
             costrutto.student_id = id_student;
             costrutto.ask = 'N';
@@ -183,6 +219,7 @@ list leggi_inviti(list inviti){
 
         inviti = rimuovi_in_testa(inviti);
     } // end while
+    DEBUG;
     return inviti;
 }
 
