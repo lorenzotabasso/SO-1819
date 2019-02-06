@@ -157,8 +157,8 @@ void read_conf(char * config_path){
 
 void stampa_list (list l){
     while (l != NULL){
-        printf("%d; ", (*l).student);
-        l=(*l).nxt;
+        printf("%d; ", l->student);
+        l = l->nxt;
     }
     printf("\n");
 }

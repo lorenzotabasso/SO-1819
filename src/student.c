@@ -22,10 +22,13 @@ void stud_handler();
  // TODO: problemi di concorrenza tra i tipi di messaggi!
 
 int main(int argc, char * argv[]) {
-    // sa.sa_handler = handle_signal;
-    // sa.sa_flags = 0;
+    struct sigaction sas;
+    sas.sa_handler = handle_signal;
+    sas.sa_flags = 0 | SA_RESTART; // needed for avoid Interrupted System call (errno 4)
 
-    signal(SIGCONT, stud_handler);
+    //signal(SIGCONT, handle_signal);
+    sigaction(SIGCONT,&sas,NULL);
+
 
     init_ipc_id();
 
@@ -49,17 +52,7 @@ int main(int argc, char * argv[]) {
                 }
                 //invites--; // TODO: Errore! spostare in invia_invito()
             }
-            // else { // ELSE nel punto giusto!!
-            //     printf(YEL"(PID: %d) numero inviti: %d"RESET"\n", getpid(), invites);
-            //     condition = 0;
-            // }
         }
-        // if(group_num == nof_elem){
-        //     condition = 0;
-        // }
-        // else {
-        //     condition = 0;
-        // }
 
         msgrcv(id_message_queue,&costrutto,sizeof(costrutto),0,0);
 
@@ -100,13 +93,14 @@ int main(int argc, char * argv[]) {
         stampa_list(costrutto2.gruppo);
         costrutto2.group_nums = group_num;
         printf("group num: %d\n",costrutto2.group_nums);
-        printf("\t\tMessage_queue_id_parent: %d\n", id_message_queue_parent);
         msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
     }
 
-    kill(getppid(), SIGUSR1);
+    //kill(getppid(), SIGUSR1);
 
     printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
+
+    PRINT_ERROR;
 
     request_resource(id_children_semaphore,0);
 
@@ -200,12 +194,14 @@ list leggi_inviti(list inviti){
 
 void handle_signal(int signal) {
     printf("(PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
-    switch (signal) {
+    switch(signal) {
         case SIGCONT:
             condition = 0;
-            DEBUG;
+            break;
         default:
             DEBUG;
+            condition = 0;
+            break;
     }
 }
 
