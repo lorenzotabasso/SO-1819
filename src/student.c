@@ -16,19 +16,9 @@ int final_mark; // esito finale
 
 int reject; // numero di rifiuti effettuati
 int id_student;
-void stud_handler();
-//*************//
-
- // TODO: problemi di concorrenza tra i tipi di messaggi!
 
 int main(int argc, char * argv[]) {
-    struct sigaction sas;
-    sas.sa_handler = handle_signal;
-    sas.sa_flags = 0 | SA_RESTART; // needed for avoid Interrupted System call (errno 4)
-
-    //signal(SIGCONT, handle_signal);
-    sigaction(SIGCONT,&sas,NULL);
-
+    signal(SIGCONT, handle_signal);
 
     init_ipc_id();
 
@@ -96,11 +86,7 @@ int main(int argc, char * argv[]) {
         msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
     }
 
-    //kill(getppid(), SIGUSR1);
-
     printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
-
-    PRINT_ERROR;
 
     request_resource(id_children_semaphore,0);
 
@@ -193,16 +179,7 @@ list leggi_inviti(list inviti){
 }
 
 void handle_signal(int signal) {
-    printf("(PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
-    switch(signal) {
-        case SIGCONT:
-            condition = 0;
-            break;
-        default:
-            DEBUG;
-            condition = 0;
-            break;
-    }
+    condition = 0;
 }
 
 void init_student_parameters(){
@@ -237,10 +214,6 @@ void init_ipc_id(){
     if (shm_pointer == (void *) -1) {
         PRINT_ERROR;
     }
-}
-
-void stud_handler(){
-    condition = 0;
 }
 
 void goodbye(){

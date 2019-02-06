@@ -103,14 +103,13 @@ pid_t population[POP_SIZE];
 /* manager.c */
 void set_shared_data();
 void test();
-void test2();
 void compute_mark(int number_marks);
 
 /* student.c */
 void invia_invito(); // invia inviti per unirsi al suo gruppo
 list leggi_inviti(list l); // legge la list contenente gli inviti ricevuti
 void init_student_parameters(); // inizializza le variabili  dello studente
-void handle_signal(int signal);
+void handle_signal();
 void init_ipc_id();
 void goodbye();
 

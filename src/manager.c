@@ -3,8 +3,8 @@
 int process_voti = 0;
 
 int main (int argc, char * argv[]) {
-    sa.sa_handler = test;
-    sa.sa_flags = SA_RESTART;
+    //sa.sa_handler = test;
+    //sa.sa_flags = SA_RESTART;
 
     // init IPCs
     init_children_semaphore(KEY_CHILDREN_SEMAPHORE);
@@ -53,9 +53,83 @@ int main (int argc, char * argv[]) {
         printf(GRN "PARENT, PUTTING RES" RESET "\n");
     }
 
+    signal(SIGALRM, test);
+    DEBUG;
     start_timer();
 
-    compute_mark(process_voti);
+    DEBUG;
+        msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0,0);
+        DEBUG;
+
+    while(process_voti > 0){
+        DEBUG;
+        msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0,0);
+        DEBUG;
+        
+        int sender1 = costrutto2.sender;
+        list gruppo1 = costrutto2.gruppo;
+        int group_num1 = costrutto2.group_nums;
+
+        // NON si toccano, servono per le computazioni
+        int group_elem[group_num1][2];
+        int max_mark = 0;
+
+        // PROBLEMAAAA Dereferenziazione del puntatore/indirizzo
+        //printf("TEST: %d\n", gruppo1->voto_ade);
+
+        printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),sender1);
+
+        DEBUG;
+        for (int i=0; i<group_num1 && gruppo1 != NULL; i++) {
+            DEBUG;
+            //stampa_list(gruppo1);
+
+            group_elem[i][0] = gruppo1->student;
+            if (max_mark <= gruppo1->voto_ade) {
+                max_mark = gruppo1->voto_ade;
+            }
+            DEBUG;
+            group_elem[i][1] = gruppo1->pref_gruppo;
+            DEBUG;
+            gruppo1 = gruppo1->nxt;
+        }
+
+        // TODO: fare una print dell'array group_elem;
+
+        /*
+        Da "VOTO DEL PROGETTO" nel testo:
+        il voto di tutti gli studenti di un gruppo chiuso è determinato dal valore
+        massimo del campo voto_AdE fra gli studenti del gruppo. A tale valore
+        si sottraggono 3 punti nel caso in cui lo studente del gruppo si ritrovi a
+        far parte di un gruppo che ha un numero di elementi diverso dal proprio
+        obiettivo (specificato da nof_elems)
+        */
+        DEBUG;
+        for (int j=0; j<=group_num1 && group_elem[j][0] != 0; j++) {
+            if (group_elem[j][1] == group_num1) {
+                group_elem[j][1] = max_mark;
+            } else {
+                group_elem[j][1] = max_mark-3;
+            }
+        }
+
+        DEBUG;
+        // Assegnazione del voto allo studente in shared memory;
+        int z = 0;
+        int found = 1;
+        while(z < group_num1) {
+            for(int k = 0; k < POP_SIZE && found; k++) {
+                if(group_elem[z][0] == shm_pointer->marks[k][0]){
+                    shm_pointer->marks[k][1] = group_elem[z][1];
+                    process_voti--; // CONDIZIONE USCITA WHILE ESTERNO
+                    found = 0;
+                }
+            }
+            z++;
+        }
+        DEBUG;
+    } // end while
+    DEBUG;
 
     //for(int j = 0; j < POP_SIZE; j++) // *2 per via del "doppio blocco" del figlio
     //    relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
@@ -99,12 +173,6 @@ void set_shared_data(){
 void test(){
     DEBUG;
     kill(0,SIGCONT);
-    process_voti = POP_SIZE; // necesario, evita il student 0
-    compute_mark(process_voti);
-}
-
-void test2(){
-    DEBUG;
     process_voti = POP_SIZE; // necesario, evita il student 0
     //compute_mark(process_voti);
 }
