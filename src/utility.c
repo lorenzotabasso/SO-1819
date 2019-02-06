@@ -81,7 +81,11 @@ void deallocate_IPCs(){
 //    for (int i = 0; i < POP_SIZE; i++) {
 //        //deallocate_msg_queue(get_msg_queue_id(population[i]));
 //    }
+    id_message_queue = msgget(KEY_MESSAGE_QUEUE, 0666 | IPC_CREAT);
     if (msgctl(id_message_queue, IPC_RMID, NULL) == -1){
+        PRINT_ERROR;
+    }
+    if (msgctl(id_message_queue_parent, IPC_RMID, NULL) == -1){
         PRINT_ERROR;
     }
     if (semctl(id_children_semaphore, 0, IPC_RMID) == -1){

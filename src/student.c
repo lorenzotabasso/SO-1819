@@ -92,7 +92,7 @@ int main(int argc, char * argv[]) {
 
     int vero = 1;
     for(int i = 0;i<=POP_SIZE && vero; i++){
-        if(shm_pointer->marks[i][1] == id_student){
+        if(shm_pointer->marks[i][0] == id_student){
             final_mark = shm_pointer->marks[i][1];
             vero = 0;
         }
@@ -101,7 +101,6 @@ int main(int argc, char * argv[]) {
     printf(YEL "(PID: %d) Sono lo studente : %d" RESET "\n", getpid(), id_student);
     printf("(PID: %d) avevo preso %d di archittettura degli elaboratori\n", getpid(), ade_mark);
     printf("(PID: %d) e ho preso %d di sistemi operativi\n", getpid(), final_mark);
-
 }
 
 void invia_invito(){
