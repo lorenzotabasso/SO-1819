@@ -22,10 +22,13 @@ void stud_handler();
  // TODO: problemi di concorrenza tra i tipi di messaggi!
 
 int main(int argc, char * argv[]) {
-    //sa.sa_handler = handle_signal;
-    //sa.sa_flags = 0; // needed for avoid Interrupted signal error (errno 4)
+    struct sigaction sas;
+    sas.sa_handler = handle_signal;
+    sas.sa_flags = 0 | SA_RESTART; // needed for avoid Interrupted System call (errno 4)
 
-    signal(SIGCONT, stud_handler);
+    //signal(SIGCONT, handle_signal);
+    sigaction(SIGCONT,&sas,NULL);
+
 
     init_ipc_id();
 
@@ -100,11 +103,8 @@ int main(int argc, char * argv[]) {
         stampa_list(costrutto2.gruppo);
         costrutto2.group_nums = group_num;
         printf("group num: %d\n",costrutto2.group_nums);
-        PRINT_ERROR;
         msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
-        PRINT_ERROR;
     }
-    PRINT_ERROR;
 
     //kill(getppid(), SIGUSR1);
 
@@ -207,9 +207,11 @@ void handle_signal(int signal) {
     switch(signal) {
         case SIGCONT:
             condition = 0;
+            break;
         default:
             DEBUG;
             condition = 0;
+            break;
     }
 }
 

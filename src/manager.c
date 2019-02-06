@@ -3,6 +3,9 @@
 int process_voti = 0;
 
 int main (int argc, char * argv[]) {
+    sa.sa_handler = test;
+    sa.sa_flags = SA_RESTART;
+
     // init IPCs
     init_children_semaphore(KEY_CHILDREN_SEMAPHORE);
     init_shared_memory(KEY_SHARED_MEMORY);
@@ -14,8 +17,9 @@ int main (int argc, char * argv[]) {
     /* Init sim_parameters */
     read_conf(CONF_PATH);
 
-    signal(SIGALRM, test);
+    //signal(SIGALRM, test);
     //signal(SIGUSR1, test2);
+    sigaction(SIGALRM, &sa, NULL);
 
     printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
 	for (int i=0; i < POP_SIZE; i++) {
@@ -50,6 +54,8 @@ int main (int argc, char * argv[]) {
     }
 
     start_timer();
+
+    compute_mark(process_voti);
 
     //for(int j = 0; j < POP_SIZE; j++) // *2 per via del "doppio blocco" del figlio
     //    relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
@@ -94,7 +100,7 @@ void test(){
     DEBUG;
     kill(0,SIGCONT);
     process_voti = POP_SIZE; // necesario, evita il student 0
-    //compute_mark(process_voti);
+    compute_mark(process_voti);
 }
 
 void test2(){
@@ -104,11 +110,12 @@ void test2(){
 }
 
 void compute_mark(int number_marks){
-    sleep(2);
     DEBUG;
     while(number_marks > 0){
         DEBUG;
-        msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),getpid(),0);
+        msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0,0);
+        DEBUG;
+        
         int sender1 = costrutto2.sender;
         list gruppo1 = costrutto2.gruppo;
         int group_num1 = costrutto2.group_nums;
@@ -118,7 +125,7 @@ void compute_mark(int number_marks){
         int max_mark = 0;
 
         // PROBLEMAAAA Dereferenziazione del puntatore/indirizzo
-        printf("TEST: %d\n", gruppo1->voto_ade);
+        //printf("TEST: %d\n", gruppo1->voto_ade);
 
         printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),sender1);
 
