@@ -22,8 +22,8 @@ void stud_handler();
  // TODO: problemi di concorrenza tra i tipi di messaggi!
 
 int main(int argc, char * argv[]) {
-    // sa.sa_handler = handle_signal;
-    // sa.sa_flags = 0;
+    //sa.sa_handler = handle_signal;
+    //sa.sa_flags = 0; // needed for avoid Interrupted signal error (errno 4)
 
     signal(SIGCONT, stud_handler);
 
@@ -100,13 +100,17 @@ int main(int argc, char * argv[]) {
         stampa_list(costrutto2.gruppo);
         costrutto2.group_nums = group_num;
         printf("group num: %d\n",costrutto2.group_nums);
-        printf("\t\tMessage_queue_id_parent: %d\n", id_message_queue_parent);
+        PRINT_ERROR;
         msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
+        PRINT_ERROR;
     }
+    PRINT_ERROR;
 
-    kill(getppid(), SIGUSR1);
+    //kill(getppid(), SIGUSR1);
 
     printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
+
+    PRINT_ERROR;
 
     request_resource(id_children_semaphore,0);
 
@@ -200,12 +204,12 @@ list leggi_inviti(list inviti){
 
 void handle_signal(int signal) {
     printf("(PID: %d): got signal #%d: %s\n", getpid(), signal, strsignal(signal));
-    switch (signal) {
+    switch(signal) {
         case SIGCONT:
             condition = 0;
-            DEBUG;
         default:
             DEBUG;
+            condition = 0;
     }
 }
 
