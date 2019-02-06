@@ -8,7 +8,7 @@ int main (int argc, char * argv[]) {
 
     // init IPCs
     init_children_semaphore(KEY_CHILDREN_SEMAPHORE);
-    init_shared_memory(KEY_SHARED_MEMORY);
+    //init_shared_memory(KEY_SHARED_MEMORY);
 
     //id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE,1,IPC_CREAT|0666);
     id_message_queue_parent = msgget(KEY_MESSAGE_QUEUE_PARENT,IPC_CREAT | 0666);
@@ -49,7 +49,7 @@ int main (int argc, char * argv[]) {
 
     // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria
     // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
-    set_shared_data();
+    //set_shared_data();
 
     DEBUG;
     start_timer();
@@ -72,26 +72,26 @@ int main (int argc, char * argv[]) {
     exit(EXIT_SUCCESS);
 }
 
-void set_shared_data(){
-    shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
-    if (shm_pointer == (void *) -1) {
-        PRINT_ERROR;
-    }
-
-    /* initializing the matrix for the shared memory, in the first column of
-     * the matrix will be set the PID of the processes, and in the second
-     * column will be set the group status (1 if the student is already
-     * grouped, 0 otherwise)
-     */
-    printf("PARENT (PID=%d): Initializing shared memory matrix.\n", getpid());
-    for (int i = 0; i < POP_SIZE; i++) {
-        shm_pointer->marks[i][0] = population[i];
-        shm_pointer->marks[i][1] = 2;
-        printf("[%d,", shm_pointer->marks[i][0]);
-        printf("%d]\n", shm_pointer->marks[i][1]);
-    }
-    printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
-}
+// void set_shared_data(){
+//     shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
+//     if (shm_pointer == (void *) -1) {
+//         PRINT_ERROR;
+//     }
+//
+//     /* initializing the matrix for the shared memory, in the first column of
+//      * the matrix will be set the PID of the processes, and in the second
+//      * column will be set the group status (1 if the student is already
+//      * grouped, 0 otherwise)
+//      */
+//     printf("PARENT (PID=%d): Initializing shared memory matrix.\n", getpid());
+//     for (int i = 0; i < POP_SIZE; i++) {
+//         shm_pointer->marks[i][0] = population[i];
+//         shm_pointer->marks[i][1] = 2;
+//         printf("[%d,", shm_pointer->marks[i][0]);
+//         printf("%d]\n", shm_pointer->marks[i][1]);
+//     }
+//     printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
+// }
 
 void test(){
     DEBUG;
@@ -108,31 +108,28 @@ void compute_mark(int number_marks){
     DEBUG;
     while(number_marks > 0){
         DEBUG;
-        msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),getpid(),0);
+        if (msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),getpid(),0) == -1)
+            PRINT_ERROR;
         printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),costrutto2.sender);
         DEBUG;
-        list gruppo1 = costrutto2.gruppo;
 
-        if (gruppo1 == NULL) {
-            DEBUG;
-        }
-        PRINT_ERROR;
+        list gruppo1 = costrutto2.gruppo;
         int group_nums1 = costrutto2.group_nums;
         DEBUG;
-        //stampa_list(gruppo1);
-        //stampa_list(costrutto2.gruppo);
-
-        while (gruppo1 != NULL){
-            printf("%d; ", gruppo1->student);
-            gruppo1 = gruppo1->nxt;
-        }
-        printf("\n");
 
         if (group_nums1 == 1) {
             int found = 1;
             for (int i = 0; i < POP_SIZE && found; i++) {
-                if (shm_pointer->marks[i][0] == gruppo1->student) {
-                    shm_pointer->marks[i][1] = 0;
+                DEBUG;
+                while (gruppo1 != NULL) {
+                    DEBUG;
+                    printf("%d\n", gruppo1->voto_ade);
+                    gruppo1 = gruppo1->nxt;
+                }
+                DEBUG;
+                if (marks[i][0] == gruppo1->student) {
+                    DEBUG;
+                    marks[i][1] = 0;
                     found = 0;
                 }
             }
@@ -154,15 +151,15 @@ void compute_mark(int number_marks){
                 // non è in gruppo con quanti voleva
                 if (gruppo1->pref_gruppo != group_nums1) {
                     for (int i = 0; i < POP_SIZE && found; i++) {
-                        if (shm_pointer->marks[i][0] == gruppo1->student) {
-                            shm_pointer->marks[i][1] = max_mark-3;
+                        if (marks[i][0] == gruppo1->student) {
+                            marks[i][1] = max_mark-3;
                             found = 0;
                         }
                     }
                 } else { // è in gruppo con quanti voleva
                     for (int i = 0; i < POP_SIZE && found; i++) {
-                        if (shm_pointer->marks[i][0] == gruppo1->student) {
-                            shm_pointer->marks[i][1] = max_mark;
+                        if (marks[i][0] == gruppo1->student) {
+                            marks[i][1] = max_mark;
                             found = 0;
                         }
                     }

@@ -47,6 +47,8 @@ struct shared_memory {
     int marks[POP_SIZE][2];
 };
 
+int marks[POP_SIZE][2];
+
 // pointer which will contain the memory
 //address for the matrix of grouped processes
 struct shared_memory * shm_pointer;

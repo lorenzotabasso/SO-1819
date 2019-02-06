@@ -90,18 +90,18 @@ int main(int argc, char * argv[]) {
 
     request_resource(id_children_semaphore,0);
 
-    // shared memory
-    id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*shm_pointer), 0666 | IPC_CREAT);
-    // shared memory pointer
-    shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
-    if (shm_pointer == (void *) -1) {
-        PRINT_ERROR;
-    }
+    // // shared memory
+    // id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*shm_pointer), 0666 | IPC_CREAT);
+    // // shared memory pointer
+    // shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
+    // if (shm_pointer == (void *) -1) {
+    //     PRINT_ERROR;
+    // }
 
     int vero = 1;
     for(int i = 0;i<=POP_SIZE && vero; i++){
-        if(shm_pointer->marks[i][0] == id_student){
-            final_mark = shm_pointer->marks[i][1];
+        if(marks[i][0] == id_student){
+            final_mark = marks[i][1];
             vero = 0;
         }
     }
@@ -190,7 +190,7 @@ void handle_signal(int signal) {
 }
 
 void init_student_parameters(){
-    //read_conf(CONF_PATH);
+    read_conf(CONF_PATH);
 
     id_student = getpid();
     leader = 1;
