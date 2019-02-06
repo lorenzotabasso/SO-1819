@@ -38,10 +38,6 @@ int main (int argc, char * argv[]) {
 
 	/* PARENT CODE: the child processes exited already */
 
-    // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria
-    // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
-    set_shared_data();
-
 	/* after the creation of child, parent add POP_SIZE resource to the
 	 * semaphore of children, in order to unblock them and to start the
 	 * simulation
@@ -50,6 +46,10 @@ int main (int argc, char * argv[]) {
         relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
         printf(GRN "PARENT, PUTTING RES" RESET "\n");
     }
+
+    // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria
+    // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
+    set_shared_data();
 
     DEBUG;
     start_timer();
@@ -108,10 +108,69 @@ void compute_mark(int number_marks){
     DEBUG;
     while(number_marks > 0){
         DEBUG;
-        msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0,0);
+        msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),getpid(),0);
         printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),costrutto2.sender);
         DEBUG;
-        number_marks--;
+        list gruppo1 = costrutto2.gruppo;
+
+        if (gruppo1 == NULL) {
+            DEBUG;
+        }
+        PRINT_ERROR;
+        int group_nums1 = costrutto2.group_nums;
+        DEBUG;
+        //stampa_list(gruppo1);
+        //stampa_list(costrutto2.gruppo);
+
+        while (gruppo1 != NULL){
+            printf("%d; ", gruppo1->student);
+            gruppo1 = gruppo1->nxt;
+        }
+        printf("\n");
+
+        if (group_nums1 == 1) {
+            int found = 1;
+            for (int i = 0; i < POP_SIZE && found; i++) {
+                if (shm_pointer->marks[i][0] == gruppo1->student) {
+                    shm_pointer->marks[i][1] = 0;
+                    found = 0;
+                }
+            }
+            number_marks--; // condizione uscita esterna
+        } else {
+            int max_mark = 0;
+
+            // troviamo il voto massimo
+            while (gruppo1 != NULL) {
+                if (max_mark <= gruppo1->voto_ade) {
+                    max_mark = gruppo1->voto_ade;
+                }
+                gruppo1 = gruppo1->nxt;
+            }
+
+            // togliamo i punti necessari
+            while (gruppo1 != NULL) {
+              int found = 1;
+                // non è in gruppo con quanti voleva
+                if (gruppo1->pref_gruppo != group_nums1) {
+                    for (int i = 0; i < POP_SIZE && found; i++) {
+                        if (shm_pointer->marks[i][0] == gruppo1->student) {
+                            shm_pointer->marks[i][1] = max_mark-3;
+                            found = 0;
+                        }
+                    }
+                } else { // è in gruppo con quanti voleva
+                    for (int i = 0; i < POP_SIZE && found; i++) {
+                        if (shm_pointer->marks[i][0] == gruppo1->student) {
+                            shm_pointer->marks[i][1] = max_mark;
+                            found = 0;
+                        }
+                    }
+                }
+                number_marks--; // condizione uscita esterna
+                gruppo1 = gruppo1->nxt;
+            }
+        }
     }
 
     // DEBUG;
@@ -119,7 +178,7 @@ void compute_mark(int number_marks){
     //     DEBUG;
     //     msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0,0);
     //     DEBUG;
-        
+
     //     int sender1 = costrutto2.sender;
     //     list gruppo1 = costrutto2.gruppo;
     //     int group_num1 = costrutto2.group_nums;
@@ -150,14 +209,14 @@ void compute_mark(int number_marks){
 
     //     // TODO: fare una print dell'array group_elem;
 
-        
+
     //     Da "VOTO DEL PROGETTO" nel testo:
     //     il voto di tutti gli studenti di un gruppo chiuso è determinato dal valore
     //     massimo del campo voto_AdE fra gli studenti del gruppo. A tale valore
     //     si sottraggono 3 punti nel caso in cui lo studente del gruppo si ritrovi a
     //     far parte di un gruppo che ha un numero di elementi diverso dal proprio
     //     obiettivo (specificato da nof_elems)
-        
+
     //     DEBUG;
     //     for (int j=0; j<=group_num1 && group_elem[j][0] != 0; j++) {
     //         if (group_elem[j][1] == group_num1) {

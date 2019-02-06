@@ -90,6 +90,14 @@ int main(int argc, char * argv[]) {
 
     request_resource(id_children_semaphore,0);
 
+    // shared memory
+    id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*shm_pointer), 0666 | IPC_CREAT);
+    // shared memory pointer
+    shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
+    if (shm_pointer == (void *) -1) {
+        PRINT_ERROR;
+    }
+
     int vero = 1;
     for(int i = 0;i<=POP_SIZE && vero; i++){
         if(shm_pointer->marks[i][0] == id_student){
@@ -182,7 +190,7 @@ void handle_signal(int signal) {
 }
 
 void init_student_parameters(){
-    read_conf(CONF_PATH);
+    //read_conf(CONF_PATH);
 
     id_student = getpid();
     leader = 1;
@@ -205,14 +213,6 @@ void init_ipc_id(){
     // message queue
     init_message_queue(KEY_MESSAGE_QUEUE);
     id_message_queue_parent = msgget(KEY_MESSAGE_QUEUE_PARENT,IPC_CREAT | 0666);
-    // shared memory
-    id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*shm_pointer), 0666 | IPC_CREAT);
-
-    // shared memory pointer
-    shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
-    if (shm_pointer == (void *) -1) {
-        PRINT_ERROR;
-    }
 }
 
 void goodbye(){
