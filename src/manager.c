@@ -118,8 +118,11 @@ void compute_mark(int number_marks){
         // printf("%d\n", costrutto2.group_id_msg);
         // printf("%d\n", costrutto2.group_num_msg);
 
+        DEBUG;
+
         int found = 1;
         for (int i = 0; i < POP_SIZE && found; i++) {
+            DEBUG;
             if (shm_pointer->marks[i][0] == costrutto2.student_msg) {
                 shm_pointer->marks[i][1] = costrutto2.group_id_msg;
                 shm_pointer->marks[i][2] = costrutto2.group_num_msg;
@@ -131,7 +134,9 @@ void compute_mark(int number_marks){
 
                 found = 0;
             }
+            DEBUG;
         }
+        DEBUG;
         number_marks--; // condizione uscita esterna
 
         // if (group_nums1 == 1) {
@@ -178,6 +183,7 @@ void compute_mark(int number_marks){
         //     }
         // }
     }
+    DEBUG;
 
     for (int i = 0; i < POP_SIZE; i++) {
         if (shm_pointer->marks[i][2] != 1) {
@@ -185,7 +191,7 @@ void compute_mark(int number_marks){
             int max_mark = 0;
 
             fixed_id = shm_pointer->marks[i][1]; // fisso l'id del gruppo
-            
+
             // trovo il voto massimo nel gruppo
             for (int j = 0; j < POP_SIZE; j++){
                 if (shm_pointer->marks[j][1] == fixed_id) {

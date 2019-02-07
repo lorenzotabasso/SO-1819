@@ -110,48 +110,35 @@ void read_conf(char * config_path){
     if (sscanf(line, "sim_time = %d", &sim_time) != 1) {
         PRINT_ERROR;
     } else {
-        if (sim_time < 0)
-            PRINT_ERROR;
+        if (sim_time < 0) {
+            printf("Time cannot be NULL!\n");
+            exit(EXIT_FAILURE);
+        }
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_2 = %d", &dev_preference_2) != 1) {
         PRINT_ERROR;
-    } else {
-        if (sim_time < 0)
-            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_3 = %d", &dev_preference_3) != 1) {
         PRINT_ERROR;
-    } else {
-        if (sim_time < 0)
-            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "dev_preference_4 = %d", &dev_preference_4) != 1) {
         PRINT_ERROR;
-    } else {
-        if (sim_time < 0)
-            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "nof_invites = %d", &nof_invites) != 1) {
         PRINT_ERROR;
-    } else {
-        if (sim_time < 0)
-            PRINT_ERROR;
     }
 
     fgets(line, max, config_fp);
     if (sscanf(line, "max_reject = %d", &max_reject) != 1) {
         PRINT_ERROR;
-    } else {
-        if (sim_time < 0)
-            PRINT_ERROR;
     }
 
     printf("(PID: %d) Config loaded.\n", getpid());
@@ -233,7 +220,7 @@ int calc_pref(int pref_2,int pref_3,int pref_4){
     int x;
     srand((unsigned int) getpid());
     x = rand()%100;
-    printf("(PID: %d) preferenza gruppo : %d\n", getpid(), x);
+    //printf("(PID: %d) preferenza gruppo : %d\n", getpid(), x);
     fflush(stdout);
     int ret = 0;
 
@@ -244,5 +231,8 @@ int calc_pref(int pref_2,int pref_3,int pref_4){
     } else if(x < pref_4) {
         ret = 4;
     }
+
+    printf(GRN"(PID: %d) preferenza gruppo : %d"RESET"\n", getpid(), ret);
+
     return ret;
 }
