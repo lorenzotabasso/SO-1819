@@ -40,7 +40,7 @@ int main(int argc, char * argv[]) {
                     printf(MAG"invito inviato"RESET"\n");
                 } else {
                     printf(MAG"sleep"RESET"\n");
-                    sleep(2);
+                    sleep(2); // lasciare sleep 2!!
                 }
             }
         }
@@ -63,7 +63,7 @@ int main(int argc, char * argv[]) {
             DEBUG;
         }
 
-        sleep(1);
+        sleep(1); // lasciare sleep 1!!
 
         msgrcv(id_message_queue_answer,&costrutto3,sizeof(costrutto3),id_student,IPC_NOWAIT);
 
