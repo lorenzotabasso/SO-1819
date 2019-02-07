@@ -28,61 +28,68 @@ int main(int argc, char * argv[]) {
     request_resource(id_children_semaphore, 0);
 
     while(condition){
-        if(invites > 0 && requests == NULL && leader == 1){
-            if(group_num < nof_elem){
+
+        if(group_num <= nof_elem){
+            if(invites > 0 && requests == NULL && leader == 1){
+
                 printf("(PID: %d) Sono lo studente %d\n",getpid(), id_student);
                 printf("(PID: %d) Numero inviti : %d\n", getpid(), invites);
-                printf("(PID: %d) %d elementi sui %d desiderati\n",getpid(), group_num,nof_elem);
+
 
                 printf("(PID: %d) Sono lo studente %d e sto inviando un invito \n", getpid(), id_student);
-                if (random_between(getpid(), 0, 100) > 30) {
+                //if (random_between(getpid(), 0, 1)) {
                     invia_invito();
-                    printf(MAG"invito inviato"RESET"\n");
-                } else {
-                    printf(MAG"sleep"RESET"\n");
-                    sleep(2); // lasciare sleep 2!!
+                // } else {
+                    sleep(2); // non cambiare 1 sec
+                // }
+            }
+
+
+            msgrcv(id_message_queue,&costrutto,sizeof(costrutto),0,IPC_NOWAIT);
+
+            if(costrutto.mtype != id_student && group_num == 1) {
+
+                if(costrutto.ask =='W'){
+                    if(requests == NULL) {
+                        requests = crea_nodo(costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
+                    }
+                    else {
+                        requests = inserisci_in_coda(requests,costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
+                    }
                 }
             }
+            printf("PID %d-leader:%d\n",id_student,leader);
+
+            sleep(1); // non cambiare 1 sec
+
+            msgrcv(id_message_queue_answer,&costrutto3,sizeof(costrutto3),id_student,IPC_NOWAIT);
+
+            printf("%c\n",costrutto3.ask);
+            if(leader==1){
+                if(costrutto3.ask == 'S') {
+                    printf("PID %d-leader2:%d\n",id_student,leader);
+                    group = inserisci_in_testa(group,costrutto3.student_id,costrutto3.ade_voto,costrutto3.pref_gruppo);
+                    stampa_list(group);
+                    invites++;
+                    group_num++;
+                    //printf("group num: %d",group_num);
+                    printf("(PID: %d) %d elementi sui %d desiderati\n",getpid(), group_num,nof_elem);
+
+                }
+                else if(costrutto3.ask == 'N') {
+                    invites++;
+                }
+            }
+
+            // while (requests!= NULL) {
+            //   requests = rimuovi_in_testa(requests);
+            // }
+
+            leggi_inviti(requests);
+            requests = NULL;
         }
-
-        // ricezione degli inviti
-        msgrcv(id_message_queue,&costrutto,sizeof(costrutto),0,IPC_NOWAIT);
-
-        if(costrutto.mtype != id_student && group_num == 1) {
-            DEBUG;
-            if(costrutto.ask =='W'){
-                DEBUG;
-                if(requests == NULL) {
-                    DEBUG;
-                    requests = crea_nodo(costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
-                }
-                else {
-                    requests = inserisci_in_coda(requests,costrutto.student_id,costrutto.ade_voto,costrutto.pref_gruppo);
-                }
-            }
-            DEBUG;
-        }
-
-        sleep(1); // lasciare sleep 1!!
-
-        msgrcv(id_message_queue_answer,&costrutto3,sizeof(costrutto3),id_student,IPC_NOWAIT);
-
-        leggi_inviti(requests);
-        // while (requests!= NULL) {
-        //     requests = rimuovi_in_testa(requests);
-        // }
-        requests = NULL;
-
-        if (costrutto3.mtype == id_student) {
-            if(costrutto3.ask == 'S') {
-                group = inserisci_in_coda(group,costrutto3.student_id,costrutto3.ade_voto,costrutto3.pref_gruppo);
-                invites++;
-                group_num++;
-                printf(YEL"(PID: %d)Siamo in %d"RESET"\n", getpid(), group_num);
-            }
-            else if(costrutto3.ask == 'N') {
-                invites++;
-            }
+        else {
+            condition = 0;
         }
     } // End while
 
