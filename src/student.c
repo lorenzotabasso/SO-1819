@@ -76,32 +76,43 @@ int main(int argc, char * argv[]) {
         printf(GRN "(PID: %d)  NORMAL Ho finito e aspetto!" RESET "\n", getpid());
 
     if(leader == 1){
-        costrutto2.mtype = getppid();
-        costrutto2.sender = id_student;
-        printf("sender : %d\n",costrutto2.sender);
-        costrutto2.gruppo = group;
-        stampa_list(costrutto2.gruppo);
-        costrutto2.group_nums = group_num;
-        printf("group num: %d\n",costrutto2.group_nums);
-        msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
+        // costrutto2.mtype = getppid();
+        // costrutto2.sender = id_student;
+        // printf("sender : %d\n",costrutto2.sender);
+        // costrutto2.gruppo = group;
+        // stampa_list(costrutto2.gruppo);
+        // costrutto2.group_nums = group_num;
+        // printf("group num: %d\n",costrutto2.group_nums);
+        // msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
+
+        stampa_list(group);
+        while (group != NULL) {
+            costrutto2.mtype = getppid();
+            costrutto2.sender = id_student;
+            printf("sender : %d\n",costrutto2.sender);
+            
+            costrutto2.student_msg = group->student;
+            costrutto2.ade_mark_msg = group->voto_ade;
+            costrutto2.pref_gruppo_msg = group->pref_gruppo;
+            costrutto2.group_id_msg = getpid() + 100;
+            costrutto2.group_num_msg = group_num;
+            printf("group num: %d\n",costrutto2.group_num_msg);
+
+            msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
+
+            printf(GRN"\t(PID: %d) Message sent to parent!"RESET"\n", getpid());
+            group = group->nxt;
+        }
     }
 
     printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
 
     request_resource(id_children_semaphore,0);
 
-    // // shared memory
-    // id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*shm_pointer), 0666 | IPC_CREAT);
-    // // shared memory pointer
-    // shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
-    // if (shm_pointer == (void *) -1) {
-    //     PRINT_ERROR;
-    // }
-
     int vero = 1;
     for(int i = 0;i<=POP_SIZE && vero; i++){
-        if(marks[i][0] == id_student){
-            final_mark = marks[i][1];
+        if(shm_pointer->marks[i][0] == id_student){
+            final_mark = shm_pointer->marks[i][4];
             vero = 0;
         }
     }
@@ -213,6 +224,15 @@ void init_ipc_id(){
     // message queue
     init_message_queue(KEY_MESSAGE_QUEUE);
     id_message_queue_parent = msgget(KEY_MESSAGE_QUEUE_PARENT,IPC_CREAT | 0666);
+
+    // shared memory
+    id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*shm_pointer), 0666 | IPC_CREAT);
+    
+    // shared memory pointer
+    shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
+    if (shm_pointer == (void *) -1) {
+        PRINT_ERROR;
+    }
 }
 
 void goodbye(){

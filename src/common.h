@@ -44,10 +44,13 @@
 #endif
 
 struct shared_memory {
-    int marks[POP_SIZE][2];
+    int marks[POP_SIZE][5]; // pid, id_gruppo, group_num, voto_ade e voto_so
 };
 
-int marks[POP_SIZE][2];
+// originale
+//int marks[POP_SIZE][2];
+
+//int marks[POP_SIZE][4]; // pid, id_gruppo, pref_gruppo e voto
 
 // pointer which will contain the memory
 //address for the matrix of grouped processes
@@ -75,12 +78,28 @@ struct my_msg{
     int pref_gruppo;
 } costrutto;
 
+// ORIGINALE
+// struct my_msg2{
+//     long mtype;
+//     int sender;
+//     int group_nums;
+//     list gruppo;
+// } costrutto2;
+
 struct my_msg2{
     long mtype;
     int sender;
-    int group_nums;
-    list gruppo;
+    int student_msg;
+    int ade_mark_msg;
+    int pref_gruppo_msg;
+    int group_id_msg;
+    int group_num_msg;
 } costrutto2;
+
+struct my_msg3{
+    long mtype;
+    int final_mark;
+} mark;
 
 #define KEY_CHILDREN_SEMAPHORE ftok("src/manager.c",1)
 #define KEY_MESSAGE_QUEUE ftok("src/manager.c",2)

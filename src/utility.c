@@ -91,9 +91,9 @@ void deallocate_IPCs(){
     if (semctl(id_children_semaphore, 0, IPC_RMID) == -1){
         PRINT_ERROR;
     }
-    // if (shmctl(id_shared_memory, IPC_RMID, NULL) == -1) {
-    //     PRINT_ERROR;
-    // }
+    if (shmctl(id_shared_memory, IPC_RMID, NULL) == -1) {
+        PRINT_ERROR;
+    }
     printf ("(PID: %d) IPCs deallocated successfully.\n", getpid());
 }
 
