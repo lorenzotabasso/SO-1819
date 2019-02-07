@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define POP_SIZE 10
+#define POP_SIZE 7
 #define DEBUG {printf(RED "\t(%d) DEBUG at FILE: %s LINE:%d" RESET "\n", getpid(), __FILE__, __LINE__);}
 #define PRINT_ERROR if (errno) {fprintf(stderr, "\t%s:%d: PID=%5d: Error %d (%s)\n", \
                       __FILE__,    __LINE__, getpid(), errno, strerror(errno));}
@@ -44,7 +44,7 @@
 #endif
 
 struct shared_memory {
-    int marks[POP_SIZE][5]; // pid, id_gruppo, group_num, voto_ade e voto_so
+    int marks[POP_SIZE][6]; // pid, id_gruppo, group_num, voto_ade, voto_so e pref_group
 };
 
 // originale
@@ -76,7 +76,7 @@ struct my_msg{
     int ade_voto;
     int student_id;
     int pref_gruppo;
-} costrutto;
+} costrutto,costrutto3;
 
 // ORIGINALE
 // struct my_msg2{
@@ -105,11 +105,15 @@ struct my_msg3{
 #define KEY_MESSAGE_QUEUE ftok("src/manager.c",2)
 #define KEY_SHARED_MEMORY ftok("src/manager.c",3)
 #define KEY_MESSAGE_QUEUE_PARENT ftok("src/manager.c",4)
+#define KEY_MESSAGE_QUEUE_ANSWER ftok("src/manager.c",5)
+#define KEY_RW_SEMAPHORE ftok("src/manager.c",6)
 
 int id_children_semaphore;
+int id_rw_semaphore;
 int id_shared_memory;
 int id_message_queue;
 int id_message_queue_parent;
+int id_message_queue_answer;
 /* config settings */
 int sim_time;
 int dev_preference_2;

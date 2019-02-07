@@ -140,8 +140,6 @@ void read_conf(char * config_path){
     if (sscanf(line, "max_reject = %d", &max_reject) != 1) {
         PRINT_ERROR;
     }
-
-    printf("(PID: %d) Config loaded.\n", getpid());
 }
 
 // UTILITY su srutture dati ---------------------------------------------------
@@ -164,6 +162,9 @@ list crea_nodo (int i,int voto, int p){
 }
 
 list inserisci_in_testa(list l, int i,int voto,int p){
+    if(l==NULL)
+      return crea_nodo(i,voto,p);
+
     list first = crea_nodo(i,voto,p);
     (*first).nxt = l;
     return first;

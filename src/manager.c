@@ -8,6 +8,7 @@ int main (int argc, char * argv[]) {
 
     // init IPCs
     init_children_semaphore(KEY_CHILDREN_SEMAPHORE);
+    id_rw_semaphore = semget(KEY_RW_SEMAPHORE, 1, IPC_CREAT | 0666);
     init_shared_memory(KEY_SHARED_MEMORY);
 
     //id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE,1,IPC_CREAT|0666);
@@ -16,6 +17,7 @@ int main (int argc, char * argv[]) {
 
     /* Init sim_parameters */
     read_conf(CONF_PATH);
+    printf("(PID: %d) Config loaded.\n", getpid());
 
     signal(SIGALRM, test);
 
@@ -46,6 +48,7 @@ int main (int argc, char * argv[]) {
         relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
         printf(GRN "PARENT, PUTTING RES" RESET "\n");
     }
+    relase_resource(id_rw_semaphore, 0);
 
     // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria
     // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
@@ -89,9 +92,10 @@ void set_shared_data(){
         shm_pointer->marks[i][2] = 0;
         shm_pointer->marks[i][3] = 0;
         shm_pointer->marks[i][4] = 0; // default: il voto iniziale di SO è 0
+        shm_pointer->marks[i][5] = 0;
         printf("[%d,%d,", shm_pointer->marks[i][0],shm_pointer->marks[i][1]);
         printf("%d,%d,", shm_pointer->marks[i][2],shm_pointer->marks[i][3]);
-        printf("%d]\n", shm_pointer->marks[i][4]);
+        printf("%d, %d]\n", shm_pointer->marks[i][4], shm_pointer->marks[i][5]);
     }
     printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
 }
@@ -118,15 +122,13 @@ void compute_mark(int number_marks){
         // printf("%d\n", costrutto2.group_id_msg);
         // printf("%d\n", costrutto2.group_num_msg);
 
-        DEBUG;
-
         int found = 1;
         for (int i = 0; i < POP_SIZE && found; i++) {
-            DEBUG;
             if (shm_pointer->marks[i][0] == costrutto2.student_msg) {
                 shm_pointer->marks[i][1] = costrutto2.group_id_msg;
                 shm_pointer->marks[i][2] = costrutto2.group_num_msg;
                 shm_pointer->marks[i][3] = costrutto2.ade_mark_msg;
+                shm_pointer->marks[i][5] = costrutto2.pref_gruppo_msg;
 
                 // printf("[%d,%d,", shm_pointer->marks[i][0],shm_pointer->marks[i][1]);
                 // printf("%d,%d,", shm_pointer->marks[i][2],shm_pointer->marks[i][3]);
@@ -134,56 +136,9 @@ void compute_mark(int number_marks){
 
                 found = 0;
             }
-            DEBUG;
         }
-        DEBUG;
         number_marks--; // condizione uscita esterna
-
-        // if (group_nums1 == 1) {
-        //     int found = 1;
-        //     for (int i = 0; i < POP_SIZE && found; i++) {
-        //         if (marks[i][0] == gruppo1->student) {
-        //             marks[i][1] = 0;
-        //             found = 0;
-        //         }
-        //     }
-        //     number_marks--; // condizione uscita esterna
-        // } else {
-        //     int max_mark = 0;
-
-        //     troviamo il voto massimo
-        //     while (gruppo1 != NULL) {
-        //         if (max_mark <= gruppo1->voto_ade) {
-        //             max_mark = gruppo1->voto_ade;
-        //         }
-        //         gruppo1 = gruppo1->nxt;
-        //     }
-
-        //     // togliamo i punti necessari
-        //     while (gruppo1 != NULL) {
-        //       int found = 1;
-        //         // non è in gruppo con quanti voleva
-        //         if (gruppo1->pref_gruppo != group_nums1) {
-        //             for (int i = 0; i < POP_SIZE && found; i++) {
-        //                 if (marks[i][0] == gruppo1->student) {
-        //                     marks[i][1] = max_mark-3;
-        //                     found = 0;
-        //                 }
-        //             }
-        //         } else { // è in gruppo con quanti voleva
-        //             for (int i = 0; i < POP_SIZE && found; i++) {
-        //                 if (marks[i][0] == gruppo1->student) {
-        //                     marks[i][1] = max_mark;
-        //                     found = 0;
-        //                 }
-        //             }
-        //         }
-        //         number_marks--; // condizione uscita esterna
-        //         gruppo1 = gruppo1->nxt;
-        //     }
-        // }
     }
-    DEBUG;
 
     for (int i = 0; i < POP_SIZE; i++) {
         if (shm_pointer->marks[i][2] != 1) {
@@ -204,80 +159,13 @@ void compute_mark(int number_marks){
             // assegno il voto a tutti i componenti
             for (int k = 0; k < POP_SIZE; k++){
                 if (shm_pointer->marks[k][1] == fixed_id) {
-                    shm_pointer->marks[k][4] = max_mark;
+                    if (shm_pointer->marks[k][2] != shm_pointer->marks[k][5]) {
+                        shm_pointer->marks[k][4] = max_mark - 3;
+                    } else {
+                        shm_pointer->marks[k][4] = max_mark;
+                    }
                 }
             }
         }
     }
-
-    // DEBUG;
-    // while(number_marks > 0){
-    //     DEBUG;
-    //     msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0,0);
-    //     DEBUG;
-
-    //     int sender1 = costrutto2.sender;
-    //     list gruppo1 = costrutto2.gruppo;
-    //     int group_num1 = costrutto2.group_nums;
-
-    //     // NON si toccano, servono per le computazioni
-    //     int group_elem[group_num1][2];
-    //     int max_mark = 0;
-
-    //     // PROBLEMAAAA Dereferenziazione del puntatore/indirizzo
-    //     //printf("TEST: %d\n", gruppo1->voto_ade);
-
-    //     printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),sender1);
-
-    //     DEBUG;
-    //     for (int i=0; i<group_num1 && gruppo1 != NULL; i++) {
-    //         DEBUG;
-    //         //stampa_list(gruppo1);
-
-    //         group_elem[i][0] = gruppo1->student;
-    //         if (max_mark <= gruppo1->voto_ade) {
-    //             max_mark = gruppo1->voto_ade;
-    //         }
-    //         DEBUG;
-    //         group_elem[i][1] = gruppo1->pref_gruppo;
-    //         DEBUG;
-    //         gruppo1 = gruppo1->nxt;
-    //     }
-
-    //     // TODO: fare una print dell'array group_elem;
-
-
-    //     Da "VOTO DEL PROGETTO" nel testo:
-    //     il voto di tutti gli studenti di un gruppo chiuso è determinato dal valore
-    //     massimo del campo voto_AdE fra gli studenti del gruppo. A tale valore
-    //     si sottraggono 3 punti nel caso in cui lo studente del gruppo si ritrovi a
-    //     far parte di un gruppo che ha un numero di elementi diverso dal proprio
-    //     obiettivo (specificato da nof_elems)
-
-    //     DEBUG;
-    //     for (int j=0; j<=group_num1 && group_elem[j][0] != 0; j++) {
-    //         if (group_elem[j][1] == group_num1) {
-    //             group_elem[j][1] = max_mark;
-    //         } else {
-    //             group_elem[j][1] = max_mark-3;
-    //         }
-    //     }
-
-    //     DEBUG;
-    //     // Assegnazione del voto allo studente in shared memory;
-    //     int z = 0;
-    //     int found = 1;
-    //     while(z < group_num1) {
-    //         for(int k = 0; k < POP_SIZE && found; k++) {
-    //             if(group_elem[z][0] == shm_pointer->marks[k][0]){
-    //                 shm_pointer->marks[k][1] = group_elem[z][1];
-    //                 number_marks--; // CONDIZIONE USCITA WHILE ESTERNO
-    //                 found = 0;
-    //             }
-    //         }
-    //         z++;
-    //     }
-    //     DEBUG;
-    // } // end while
-    // DEBUG;
 }
