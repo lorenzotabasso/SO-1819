@@ -85,18 +85,18 @@ int main(int argc, char * argv[]) {
         // printf("group num: %d\n",costrutto2.group_nums);
         // msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
 
-        stampa_list(group);
+        //stampa_list(group);
         while (group != NULL) {
             costrutto2.mtype = getppid();
             costrutto2.sender = id_student;
-            printf("sender : %d\n",costrutto2.sender);
+            //printf("sender : %d\n",costrutto2.sender);
             
             costrutto2.student_msg = group->student;
             costrutto2.ade_mark_msg = group->voto_ade;
             costrutto2.pref_gruppo_msg = group->pref_gruppo;
             costrutto2.group_id_msg = getpid() + 100;
             costrutto2.group_num_msg = group_num;
-            printf("group num: %d\n",costrutto2.group_num_msg);
+            //printf("group num: %d\n",costrutto2.group_num_msg);
 
             msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
 
@@ -105,7 +105,7 @@ int main(int argc, char * argv[]) {
         }
     }
 
-    printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
+    //printf(YEL "(PID: %d) SEMAPHORE RES: %d" RESET "\n", getpid(), semctl(id_children_semaphore, 0, GETVAL));
 
     request_resource(id_children_semaphore,0);
 
@@ -119,7 +119,7 @@ int main(int argc, char * argv[]) {
 
     printf(YEL "(PID: %d) Sono lo studente : %d" RESET "\n", getpid(), id_student);
     printf("(PID: %d) avevo preso %d di archittettura degli elaboratori\n", getpid(), ade_mark);
-    printf("(PID: %d) e ho preso %d di sistemi operativi\n", getpid(), final_mark);
+    printf(CYN"(PID: %d) e ho preso %d di sistemi operativi"RESET"\n", getpid(), final_mark);
 }
 
 void invia_invito(){

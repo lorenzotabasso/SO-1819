@@ -51,7 +51,6 @@ int main (int argc, char * argv[]) {
     // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
     set_shared_data();
 
-    DEBUG;
     start_timer();
 
     //for(int j = 0; j < POP_SIZE; j++) // *2 per via del "doppio blocco" del figlio
@@ -89,7 +88,7 @@ void set_shared_data(){
         shm_pointer->marks[i][1] = 0;
         shm_pointer->marks[i][2] = 0;
         shm_pointer->marks[i][3] = 0;
-        shm_pointer->marks[i][4] = 2;
+        shm_pointer->marks[i][4] = 0; // default: il voto iniziale di SO è 0
         printf("[%d,%d,", shm_pointer->marks[i][0],shm_pointer->marks[i][1]);
         printf("%d,%d,", shm_pointer->marks[i][2],shm_pointer->marks[i][3]);
         printf("%d]\n", shm_pointer->marks[i][4]);
@@ -98,7 +97,6 @@ void set_shared_data(){
 }
 
 void test(){
-    DEBUG;
     kill(0,SIGCONT);
     process_voti = POP_SIZE; // necesario, evita il student 0
     compute_mark(process_voti);
@@ -114,11 +112,11 @@ void compute_mark(int number_marks){
             PRINT_ERROR;
         printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),costrutto2.sender);
 
-        printf("%d\n", costrutto2.student_msg);
-        printf("%d\n", costrutto2.ade_mark_msg);
-        printf("%d\n", costrutto2.pref_gruppo_msg);
-        printf("%d\n", costrutto2.group_id_msg);
-        printf("%d\n", costrutto2.group_num_msg);
+        // printf("%d\n", costrutto2.student_msg);
+        // printf("%d\n", costrutto2.ade_mark_msg);
+        // printf("%d\n", costrutto2.pref_gruppo_msg);
+        // printf("%d\n", costrutto2.group_id_msg);
+        // printf("%d\n", costrutto2.group_num_msg);
 
         int found = 1;
         for (int i = 0; i < POP_SIZE && found; i++) {
@@ -127,9 +125,9 @@ void compute_mark(int number_marks){
                 shm_pointer->marks[i][2] = costrutto2.group_num_msg;
                 shm_pointer->marks[i][3] = costrutto2.ade_mark_msg;
 
-                printf("[%d,%d,", shm_pointer->marks[i][0],shm_pointer->marks[i][1]);
-                printf("%d,%d,", shm_pointer->marks[i][2],shm_pointer->marks[i][3]);
-                printf("%d]\n", shm_pointer->marks[i][4]);
+                // printf("[%d,%d,", shm_pointer->marks[i][0],shm_pointer->marks[i][1]);
+                // printf("%d,%d,", shm_pointer->marks[i][2],shm_pointer->marks[i][3]);
+                // printf("%d]\n", shm_pointer->marks[i][4]);
 
                 found = 0;
             }
@@ -179,6 +177,31 @@ void compute_mark(int number_marks){
         //         gruppo1 = gruppo1->nxt;
         //     }
         // }
+    }
+
+    for (int i = 0; i < POP_SIZE; i++) {
+        if (shm_pointer->marks[i][2] != 1) {
+            int fixed_id;
+            int max_mark = 0;
+
+            fixed_id = shm_pointer->marks[i][1]; // fisso l'id del gruppo
+            
+            // trovo il voto massimo nel gruppo
+            for (int j = 0; j < POP_SIZE; j++){
+                if (shm_pointer->marks[j][1] == fixed_id) {
+                    if (max_mark < shm_pointer->marks[j][3]){
+                        max_mark = shm_pointer->marks[j][3];
+                    }
+                }
+            }
+
+            // assegno il voto a tutti i componenti
+            for (int k = 0; k < POP_SIZE; k++){
+                if (shm_pointer->marks[k][1] == fixed_id) {
+                    shm_pointer->marks[k][4] = max_mark;
+                }
+            }
+        }
     }
 
     // DEBUG;
