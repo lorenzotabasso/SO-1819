@@ -1,27 +1,24 @@
 #include "common.h"
 
-int process_voti = 0;
+int condition_print_avg = 0;
 
 int main (int argc, char * argv[]) {
-    //sa.sa_handler = test;
-    //sa.sa_flags = SA_RESTART;
 
-    // init IPCs
+    // Init IPCs
     init_children_semaphore(KEY_CHILDREN_SEMAPHORE);
     id_rw_semaphore = semget(KEY_RW_SEMAPHORE, 1, IPC_CREAT | 0666);
     init_shared_memory(KEY_SHARED_MEMORY);
 
-    //id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE,1,IPC_CREAT|0666);
     id_message_queue_parent = msgget(KEY_MESSAGE_QUEUE_PARENT,IPC_CREAT | 0666);
     printf("id_message_queue_parent: %d\n", id_message_queue_parent);
 
     /* Init sim_parameters */
     read_conf(CONF_PATH);
-    printf("(PID: %d) Config loaded.\n", getpid());
+    printf("PARENT (PID: %d) Configurazione caricata.\n", getpid());
 
     signal(SIGALRM, parent_handle_signal);
 
-    printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
+    printf("PARENT (PID: %d) Creo %d studenti\n", getpid(), POP_SIZE);
 	for (int i=0; i < POP_SIZE; i++) {
 		switch (population[i] = fork()) {
 			case -1:
@@ -34,84 +31,152 @@ int main (int argc, char * argv[]) {
 
 			default:
 				/* PARENT CODE */
-				printf("PARENT (PID=%d): created child (PID=%d)\n", getpid(), population[i]);
+				printf("PARENT (PID %d) Creato studente (PID=%d)\n", getpid(), population[i]);
 		}
 	}
 
-	/* PARENT CODE: the child processes exited already */
+	/* PARENT CODE */
 
 	/* after the creation of child, parent add POP_SIZE resource to the
 	 * semaphore of children, in order to unblock them and to start the
-	 * simulation
+	 * simulation.
 	 */
     for(int j = 0; j < POP_SIZE; j++){
         relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
-        printf(GRN "PARENT, PUTTING RES" RESET "\n");
     }
+
+    /* Parent also put 1 resource on the RW semaphore, in order to handle the
+     * race condition of all his children.*/
     relase_resource(id_rw_semaphore, 0);
 
-    // ATTENZIONE: NECESSARIO che questo frammento di codice della memoria
-    // condivisa stia QUI dopo il setting del semaforo, altrimenti si entra in un while eterno!
+    /* Parent initialize the matrix for the marsk in the shared memory. */
     set_shared_data();
 
+    /* Parent start the timer for the simulation.*/
     start_timer();
 
-	// waiting for all child proceses
+	/* waiting for all child proceses */
     for (int i = 0; i < POP_SIZE; i++) {
         wait(0);
     }
 
-	printf("PARENT (PID=%d): done with waiting.\n", getpid());
+    if (condition_print_avg == 1) {
+        printf("\n"); // only for esthetics
 
-    shmdt(shm_pointer); // detaching shared memory
+        int fixed_mark = 0;
+        int counter_mark = 0;
+        int sum = 0;
+        mark_list m_ade = create_node_mark(0);
+        mark_list m_so = create_node_mark(-1);
 
-    deallocate_IPCs();
+        for (int i = 0; i < POP_SIZE; i++){
+            fixed_mark = shm_pointer->marks[i][3];
+            sum = sum + shm_pointer->marks[i][3];
+
+            if (!contains_mark(m_ade, fixed_mark)){
+                m_ade = insert_tail_mark(m_ade, fixed_mark);
+                for (int j = 0; j < POP_SIZE; j++){
+
+                    if(shm_pointer->marks[j][3] == fixed_mark) {
+                        counter_mark++;
+                    }
+                }
+                printf("PARENT (PID: %d) %d studenti hanno preso %d di AdE.\n", getpid(), counter_mark, fixed_mark);
+                counter_mark = 0;
+            }
+        }
+        fixed_mark = 0;
+        printf("\nPARENT (PID: %d) la media dei vodi di AdE è %d\n\n", getpid(), sum / POP_SIZE);
+        sum = 0;
+
+        for (int i = 0; i < POP_SIZE; i++){
+            fixed_mark = shm_pointer->marks[i][4];
+            sum = sum + shm_pointer->marks[i][4];
+
+            if (!contains_mark(m_so, fixed_mark)){
+                m_so = insert_tail_mark(m_so, fixed_mark);
+                for (int j = 0; j < POP_SIZE; j++){
+
+                    if(shm_pointer->marks[j][4] == fixed_mark) {
+                        counter_mark++;
+                    }
+                }
+                printf("PARENT (PID: %d) %d studenti hanno preso %d di SO.\n", getpid(), counter_mark, fixed_mark);
+                counter_mark = 0;
+            }
+        }
+        fixed_mark = 0;
+        printf("\nPARENT (PID: %d) la media dei voti di SO è %d\n\n", getpid(), sum / POP_SIZE);
+        sum = 0;
+    }
+
+	printf("PARENT (PID %d) Ho finito di aspettare.\n", getpid());
+
+    shmdt(shm_pointer); // Detaching shared memory
+
+    deallocate_IPCs(); // Deallocating all IPCs (Parent and children)
 
     exit(EXIT_SUCCESS);
 }
 
+/* Parent initialize the matrix for the marks contained in the shared memory.
+ * In particular, every row of the matrix contains: 
+ *
+ * marks[x][0] = the PID of the child, 
+ * marks[x][1] = the group_id of the child,
+ * marks[x][2] = the group_num of the child (which represent the number of 
+ *               element in the child's group),
+ * marks[x][3] = child's AdE mark,
+ * marks[x][4] = child's SO Mark (initially set to 0)
+ * marks[x][5] = child's pref_group (which represent the child 
+ *               preference about the number of element of the group)
+ *
+ */
 void set_shared_data(){
-    shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
+    shm_pointer = shmat(id_shared_memory, NULL, 0);
     if (shm_pointer == (void *) -1) {
         PRINT_ERROR;
     }
 
-    printf("PARENT (PID=%d): Initializing shared memory matrix.\n", getpid());
     for (int i = 0; i < POP_SIZE; i++) {
         shm_pointer->marks[i][0] = population[i];
         shm_pointer->marks[i][1] = 0;
         shm_pointer->marks[i][2] = 0;
         shm_pointer->marks[i][3] = 0;
-        shm_pointer->marks[i][4] = 0; // default: il voto iniziale di SO è 0
+        shm_pointer->marks[i][4] = 0; // default: the initial mark fo SO is 0
         shm_pointer->marks[i][5] = 0;
-        printf("[%d,%d,", shm_pointer->marks[i][0],shm_pointer->marks[i][1]);
-        printf("%d,%d,", shm_pointer->marks[i][2],shm_pointer->marks[i][3]);
-        printf("%d, %d]\n", shm_pointer->marks[i][4], shm_pointer->marks[i][5]);
     }
 
-    printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
+    printf("PARENT (PID %d) Matrice in memoria condivisa inizializzata.\n", getpid());
 }
 
+/* Parent signal handler */
 void parent_handle_signal(){
     kill(0,SIGCONT);
-    process_voti = POP_SIZE; // necesario, evita il student 0
 
-    compute_mark(process_voti);
+    compute_mark(POP_SIZE);
 
-    sleep(2); // only for correct displaying the marks
+    sleep(2); // needed only for correctly displaying the marks on the terminal
 
     printf(YEL "\n\nPARENT (PID: %d) PUBBLICAZIONE VOTO APPELLO\n" RESET "\n", getpid());
 
+    /* Releasing POP_SIZE resources on the children semaphore in order to 
+     * unblock the children and finish simulation.
+     */
     for(int j = 0; j < POP_SIZE; j++){
         relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
     }
+
+    // Condition to print the fina lresult of the simulation
+    condition_print_avg = 1;
 }
 
+/* It computes all the student's mark after sim_time expires.*/
 void compute_mark(int number_marks){
     while(number_marks > 0){
         if (msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),getpid(),0) == -1)
             PRINT_ERROR;
-        printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),costrutto2.sender);
+        printf(MAG "\tPARENT (PID: %d) ho ricevuto un messaggio dallo studente %d" RESET "\n", getpid(),costrutto2.sender);
 
         int found = 1;
         for (int i = 0; i < POP_SIZE && found; i++) {
@@ -121,14 +186,10 @@ void compute_mark(int number_marks){
                 shm_pointer->marks[i][3] = costrutto2.ade_mark_msg;
                 shm_pointer->marks[i][5] = costrutto2.pref_gruppo_msg;
 
-                // printf("[%d,%d,", shm_pointer->marks[i][0],shm_pointer->marks[i][1]);
-                // printf("%d,%d,", shm_pointer->marks[i][2],shm_pointer->marks[i][3]);
-                // printf("%d]\n", shm_pointer->marks[i][4]);
-
                 found = 0;
             }
         }
-        number_marks--; // condizione uscita esterna
+        number_marks--; // exit condition of while
     }
 
     for (int i = 0; i < POP_SIZE; i++) {
@@ -136,9 +197,10 @@ void compute_mark(int number_marks){
             int fixed_id;
             int max_mark = 0;
 
-            fixed_id = shm_pointer->marks[i][1]; // fisso l'id del gruppo
+            // fix the group_id
+            fixed_id = shm_pointer->marks[i][1];
 
-            // trovo il voto massimo nel gruppo
+            // finding the maximum mark in the group
             for (int j = 0; j < POP_SIZE; j++){
                 if (shm_pointer->marks[j][1] == fixed_id) {
                     if (max_mark <= shm_pointer->marks[j][3]){
@@ -147,7 +209,7 @@ void compute_mark(int number_marks){
                 }
             }
 
-            // assegno il voto a tutti i componenti
+            // assigning max_mark to every group component
             for (int k = 0; k < POP_SIZE; k++){
                 if (shm_pointer->marks[k][1] == fixed_id) {
                     if (shm_pointer->marks[k][2] != shm_pointer->marks[k][5]) {
