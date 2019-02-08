@@ -1,10 +1,10 @@
 #include "common.h"
 
 // Student's variables
-int invites;    // maximum number of invites which a 
+int invites;    // maximum number of invites which a
                 // student can send before receiving a response
 int nof_elem;
-int leader;     // if 1 the student is the group leader 
+int leader;     // if 1 the student is the group leader
 int ade_mark;   // AdE mark
 list requests;  // list of invites or response to previous received invites
 list group;
@@ -18,6 +18,8 @@ int final_mark;
 int reject;     // number of reject already done
 int id_student;
 
+int id_rw_semaphore;
+
 int main(int argc, char * argv[]) {
     signal(SIGCONT, child_handle_signal);
 
@@ -25,12 +27,11 @@ int main(int argc, char * argv[]) {
     init_student_parameters();
 
     request_resource(id_children_semaphore, 0);
-
+	initSemAvailable(id_rw_semaphore,0);
     condition = 1;
     while(condition){
         if(group_num <= nof_elem){
             if(invites > 0 && requests == NULL && leader == 1){
-
                 printf("(PID: %d) Sono lo studente %d\n",getpid(), id_student);
                 printf("(PID: %d) Numero inviti : %d\n", getpid(), invites);
                 printf("(PID: %d) Sono lo studente %d e sto inviando un invito \n", getpid(), id_student);
@@ -44,10 +45,9 @@ int main(int argc, char * argv[]) {
                 msgsnd(id_message_queue,&costrutto,sizeof(costrutto),0);
                 printf("(PID: %d) Invito inviato da studente %d \n",getpid(), id_student);
                 invites--;
-
-                sleep(2);
+				sleep(2);
             }
-
+			request_resource(id_rw_semaphore,0);
             msgrcv(id_message_queue,&costrutto,sizeof(costrutto),0,IPC_NOWAIT);
 
             if(costrutto.mtype != id_student && group_num == 1) {
@@ -67,7 +67,6 @@ int main(int argc, char * argv[]) {
                 if(costrutto3.ask == 'S' && group_num < nof_elem) {
                     if (!contains(group, costrutto3.student_id)) {
                         group = insert_tail(group,costrutto3.student_id,costrutto3.ade_voto,costrutto3.pref_gruppo);
-                        //print_list(group);
                         invites++;
                         group_num++;
                         printf(CYN"(PID: %d) %d elementi sui %d desiderati"RESET"\n",getpid(), group_num,nof_elem);
@@ -77,7 +76,7 @@ int main(int argc, char * argv[]) {
                     invites++;
                 }
             }
-
+			relase_resource(id_rw_semaphore,0);
             read_invites(requests);
             requests = NULL;
         }
@@ -93,7 +92,7 @@ int main(int argc, char * argv[]) {
     }
 
     if(leader == 1){
-        //print_list(group); // for debug
+        // print_list(group); // for debug
         while (group != NULL) {
             costrutto2.mtype = getppid();
             costrutto2.sender = id_student;
@@ -105,7 +104,7 @@ int main(int argc, char * argv[]) {
 
             msgsnd(id_message_queue_parent,&costrutto2,sizeof(costrutto2),0);
 
-            printf(GRN"\t(PID: %d) Ho mandato il messaggio al Manager!"RESET"\n", getpid());
+            printf(GRN"\t(PID: %d) Messaggio spedito al Manager!"RESET"\n", getpid());
             group = group->nxt;
         }
     }
@@ -121,10 +120,16 @@ int main(int argc, char * argv[]) {
     }
 
     printf("(PID: %d)" YEL "\tVoto AdE: %d" CYN "\tVoto SO: %d"RESET"\n", getpid(), ade_mark, final_mark);
+
+    /* Deallocating my rw_semaphore */
+    if (semctl(id_rw_semaphore, 0, IPC_RMID) == -1){
+        PRINT_ERROR;
+    }
+
     exit(EXIT_SUCCESS);
 }
 
-/* It reads the list "inviti", which contains all 
+/* It reads the list "inviti", which contains all
  * the previus received invites*/
 void read_invites(list inviti){
 
@@ -136,7 +141,7 @@ void read_invites(list inviti){
                 printf(GRN "(PID: %d) Invito ricevuto da parte dello studente %d" RESET "\n", getpid(), (*inviti).student);
                 printf("(PID: %d) Group_num = %d\n", getpid(), group_num);
                 printf("(PID: %d) Voto = %d\n",getpid(), (*inviti).voto_ade);
-                if((*inviti).voto_ade >= (30 - mark_offset)){
+                if((*inviti).voto_ade >= (28 - mark_offset)){
                     costrutto3.ask = 'S';
                     leader = 0;
                     group_num++;
@@ -184,7 +189,7 @@ void read_invites(list inviti){
             costrutto3.ade_voto = ade_mark;
             costrutto3.pref_gruppo = nof_elem;
             msgsnd(id_message_queue_answer,&costrutto3,sizeof(costrutto3),0);
-            printf(RED"(PID: %d) Risposta negativa da parte dello studente %d allo studente %d" RESET "\n",getpid(), id_student,(*inviti).student);
+            printf(RED "(PID: %d) Risposta negativa da parte dello studente %d allo studente %d" RESET "\n",getpid(), id_student,(*inviti).student);
         }
         inviti = inviti->nxt;
     } // end while
@@ -219,7 +224,7 @@ void init_student_parameters(){
 void init_ipc_id(){
     /* Init semaphores ids*/
     id_children_semaphore = semget(KEY_CHILDREN_SEMAPHORE, 1, IPC_CREAT | 0666);
-    id_rw_semaphore = semget(KEY_RW_SEMAPHORE, 1, IPC_CREAT | 0666);
+    id_rw_semaphore = semget(IPC_PRIVATE, 1, IPC_CREAT | 0666);
 
     /* Init message queue ids */
     init_message_queue(KEY_MESSAGE_QUEUE);
@@ -229,8 +234,8 @@ void init_ipc_id(){
     /* Init shared memory id */
     id_shared_memory = shmget(KEY_SHARED_MEMORY, sizeof(*shm_pointer), 0666 | IPC_CREAT);
 
-    /* init shared memory pointer */
-    shm_pointer = shmat(id_shared_memory, NULL, 0);
+    /* Init shared memory pointer */
+    shm_pointer = /*(struct shared_data *)*/ shmat(id_shared_memory, NULL, 0);
     if (shm_pointer == (void *) -1) {
         PRINT_ERROR;
     }

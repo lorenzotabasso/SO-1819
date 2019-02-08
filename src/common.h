@@ -3,7 +3,7 @@
 
 /* MACROs and VARIABLEs -----------------------------------------------------*/
 
-#define POP_SIZE 10
+#define POP_SIZE 15
 #define DEBUG {printf(RED "\t(%d) DEBUG at FILE: %s LINE:%d" RESET "\n", getpid(), __FILE__, __LINE__);}
 #define PRINT_ERROR if (errno) {fprintf(stderr, RED "\t%s:%d: PID=%5d: Error %d (%s)"RESET"\n", \
                       __FILE__,    __LINE__, getpid(), errno, strerror(errno));}
@@ -23,7 +23,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
-/* Colors for command line */
+/* Colors for Command Line */
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
 #define YEL   "\x1B[33m"
@@ -47,28 +47,25 @@
     };
 #endif
 
-/* IPCs keys */
 #define KEY_CHILDREN_SEMAPHORE ftok("src/manager.c",1)
 #define KEY_MESSAGE_QUEUE ftok("src/manager.c",2)
 #define KEY_SHARED_MEMORY ftok("src/manager.c",3)
 #define KEY_MESSAGE_QUEUE_PARENT ftok("src/manager.c",4)
 #define KEY_MESSAGE_QUEUE_ANSWER ftok("src/manager.c",5)
-#define KEY_RW_SEMAPHORE ftok("src/manager.c",6)
 
 /* IPCs ids*/
 int id_children_semaphore;
-int id_rw_semaphore;
 int id_shared_memory;
 int id_message_queue;
 int id_message_queue_parent;
 int id_message_queue_answer;
 
 struct shared_memory {
-    int marks[POP_SIZE][6]; /* pid, group_id, group_num, ade_mark, so_mark 
+    int marks[POP_SIZE][6]; /* pid, group_id, group_num, ade_mark, so_mark
                                and pref_group */
 };
 
-struct shared_memory * shm_pointer; // pointer to shared memory area
+struct shared_memory * shm_pointer; // Pointer to shared memory area
 
 // List
 typedef struct _node* list;
@@ -116,7 +113,7 @@ int dev_preference_4;
 int nof_invites;
 int max_reject;
 
-/* Vector of children PIDs */
+/* Vector of kids PIDs */
 pid_t population[POP_SIZE];
 
 /* FUNCTIONS ----------------------------------------------------------------*/
@@ -133,6 +130,7 @@ void init_student_parameters();
 void init_ipc_id();
 
 /* utility.c - Functions grouped by category*/
+
 void start_timer();
 
 int random_between(pid_t seed, int min, int max);
@@ -140,6 +138,7 @@ int compute_preference(int pref_2,int pref_3,int pref_4);
 
 void init_message_queue(int key_msg_queue);
 void init_children_semaphore (int key_sem);
+int initSemAvailable(int semId, int semNum);
 int request_resource(int id_sem, int sem_num);
 int relase_resource(int id_sem, int sem_num);
 void init_shared_memory(int key_shmem);

@@ -42,18 +42,24 @@ void init_message_queue(int key_msg_queue){
     if (id_message_queue == -1) {
         PRINT_ERROR;
     }
-    printf("(PID: %d) Created message queue with ID: %d\n",getpid(), id_message_queue);
+    printf("(PID: %d) Creata coda di messaggi con ID: %d\n",getpid(), id_message_queue);
 }
 
 void init_children_semaphore (int key_sem){
-	id_children_semaphore = semget(key_sem, 1, IPC_CREAT | 0666);
-	if (id_children_semaphore == -1) {
-		PRINT_ERROR;
-	}
-	if (semctl(id_children_semaphore, 0, SETVAL, 0) == -1) {
-		PRINT_ERROR;
-	}
-	printf("(PID: %d) Created Children Semaphore and initialized with ID: %d\n", getpid(), id_children_semaphore);
+    id_children_semaphore = semget(key_sem, 1, IPC_CREAT | 0666);
+    if (id_children_semaphore == -1) {
+        PRINT_ERROR;
+    }
+    if (semctl(id_children_semaphore, 0, SETVAL, 0) == -1) {
+        PRINT_ERROR;
+    }
+    printf("(PID: %d) Creato il semaforo degli studenti con ID: %d\n", getpid(), id_children_semaphore);
+}
+
+int initSemAvailable(int semId, int semNum) {
+    union semun arg;
+    arg.val = 1;
+    return semctl(semId, semNum, SETVAL, arg);
 }
 
 int request_resource(int id_sem, int sem_num) {
@@ -86,7 +92,7 @@ void init_shared_memory(int key_shmem) {
     if (id_shared_memory == -1) {
         PRINT_ERROR;
     }
-    printf("(PID: %d) Shared memory initialized with ID: %d\n", getpid(), id_shared_memory);
+    printf("(PID: %d) Memoria condivisa initializzata con ID: %d\n", getpid(), id_shared_memory);
 }
 
 void deallocate_IPCs(){
