@@ -183,6 +183,17 @@ list inserisci_in_coda(list l,int i,int voto, int p){
     return l;
 }
 
+int contains(list l, int stud) {
+    int contained = 0;
+    while(l != NULL && !contained) {
+        if (l->student == stud) {
+            contained = 1;
+        }
+        l = l->nxt;
+    }
+    return contained;
+}
+
 list rimuovi_in_testa (list l){
     l=(*l).nxt;
     return l;

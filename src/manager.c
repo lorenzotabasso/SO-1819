@@ -19,7 +19,7 @@ int main (int argc, char * argv[]) {
     read_conf(CONF_PATH);
     printf("(PID: %d) Config loaded.\n", getpid());
 
-    signal(SIGALRM, test);
+    signal(SIGALRM, parent_handle_signal);
 
     printf("PARENT (PID=%d): creating %d child processes\n", getpid(), POP_SIZE);
 	for (int i=0; i < POP_SIZE; i++) {
@@ -56,18 +56,14 @@ int main (int argc, char * argv[]) {
 
     start_timer();
 
-    //for(int j = 0; j < POP_SIZE; j++) // *2 per via del "doppio blocco" del figlio
-    //    relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
-
 	// waiting for all child proceses
-	//while ((child_pid = wait(&status)) > 0);
     for (int i = 0; i < POP_SIZE; i++) {
         wait(0);
     }
 
 	printf("PARENT (PID=%d): done with waiting.\n", getpid());
 
-    //shmdt(shm_pointer); // detaching shared memory
+    shmdt(shm_pointer); // detaching shared memory
 
     deallocate_IPCs();
 
@@ -80,11 +76,6 @@ void set_shared_data(){
         PRINT_ERROR;
     }
 
-    /* initializing the matrix for the shared memory, in the first column of
-     * the matrix will be set the PID of the processes, and in the second
-     * column will be set the group status (1 if the student is already
-     * grouped, 0 otherwise)
-     */
     printf("PARENT (PID=%d): Initializing shared memory matrix.\n", getpid());
     for (int i = 0; i < POP_SIZE; i++) {
         shm_pointer->marks[i][0] = population[i];
@@ -97,17 +88,21 @@ void set_shared_data(){
         printf("%d,%d,", shm_pointer->marks[i][2],shm_pointer->marks[i][3]);
         printf("%d, %d]\n", shm_pointer->marks[i][4], shm_pointer->marks[i][5]);
     }
+
     printf("PARENT (PID=%d): Shared memory matrix initialized.\n", getpid());
 }
 
-void test(){
+void parent_handle_signal(){
     kill(0,SIGCONT);
     process_voti = POP_SIZE; // necesario, evita il student 0
+    
     compute_mark(process_voti);
+    
     for(int j = 0; j < POP_SIZE; j++){
         relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
-        printf(GRN "PARENT, PUTTING RES" RESET "\n");
     }
+    
+    printf(YEL "\n\nPARENT (PID: %d) PUBBLICAZIONE VOTO APPELLO\n" RESET "\n", getpid());
 }
 
 void compute_mark(int number_marks){
@@ -115,12 +110,6 @@ void compute_mark(int number_marks){
         if (msgrcv(id_message_queue_parent,&costrutto2,sizeof(costrutto2),getpid(),0) == -1)
             PRINT_ERROR;
         printf(MAG "\tPARENT (PID: %d) Received message from student %d" RESET "\n", getpid(),costrutto2.sender);
-
-        // printf("%d\n", costrutto2.student_msg);
-        // printf("%d\n", costrutto2.ade_mark_msg);
-        // printf("%d\n", costrutto2.pref_gruppo_msg);
-        // printf("%d\n", costrutto2.group_id_msg);
-        // printf("%d\n", costrutto2.group_num_msg);
 
         int found = 1;
         for (int i = 0; i < POP_SIZE && found; i++) {

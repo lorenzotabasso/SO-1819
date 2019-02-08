@@ -127,14 +127,14 @@ pid_t population[POP_SIZE];
 
 /* manager.c */
 void set_shared_data();
-void test();
+void parent_handle_signal();
 void compute_mark(int number_marks);
 
 /* student.c */
 void invia_invito(); // invia inviti per unirsi al suo gruppo
 void leggi_inviti(list l); // legge la list contenente gli inviti ricevuti
 void init_student_parameters(); // inizializza le variabili  dello studente
-void handle_signal();
+void child_handle_signal();
 void init_ipc_id();
 void goodbye();
 
@@ -157,6 +157,7 @@ list inserisci_in_coda(list l,int i,int voto, int p);
 list rimuovi_in_testa (list l);
 list rimuovi_in_coda (list l);
 list rimuovi_studente(list l, int n);
+int contains(list l, int stud);
 int calc_pref(int pref_2,int pref_3,int pref_4);
 
 #endif // COMMON_H
