@@ -146,7 +146,7 @@ void read_conf(char * config_path){
 
 // UTILITY su srutture dati ---------------------------------------------------
 
-void stampa_list (list l){
+void print_list (list l){
     while (l != NULL){
         printf("%d; ", l->student);
         l = l->nxt;
@@ -154,7 +154,7 @@ void stampa_list (list l){
     printf("\n");
 }
 
-list crea_nodo (int i,int voto, int p){
+list create_node (int i,int voto, int p){
     list nuovo = (list) malloc(sizeof(list));
     nuovo->student = i;
     nuovo->voto_ade = voto;
@@ -163,22 +163,22 @@ list crea_nodo (int i,int voto, int p){
     return nuovo;
 }
 
-list inserisci_in_testa(list l, int i,int voto,int p){
+list insert_head(list l, int i,int voto,int p){
     if(l==NULL)
-      return crea_nodo(i,voto,p);
+      return create_node(i,voto,p);
 
-    list first = crea_nodo(i,voto,p);
+    list first = create_node(i,voto,p);
     (*first).nxt = l;
     return first;
 }
 
-list inserisci_in_coda(list l,int i,int voto, int p){
+list insert_tail(list l,int i,int voto, int p){
     if(!(*l).nxt){
-        list new= crea_nodo(i,voto,p);
+        list new= create_node(i,voto,p);
         (*l).nxt=new;
     }
     else {
-        inserisci_in_coda((*l).nxt,i,voto,p);
+        insert_tail((*l).nxt,i,voto,p);
     }
     return l;
 }
@@ -194,43 +194,43 @@ int contains(list l, int stud) {
     return contained;
 }
 
-list rimuovi_in_testa (list l){
+list remove_head(list l){
     l=(*l).nxt;
     return l;
 }
 
-list rimuovi_in_coda (list l){
+list remove_tail (list l){
     if(!(*(*l).nxt).nxt){
         (*l).nxt=NULL;
     }
     else {
-        rimuovi_in_coda((*l).nxt);
+        remove_tail((*l).nxt);
     }
     return l;
 }
 
-list rimuovi_studente(list l, int n){
-    if(l->student != n && l->nxt != NULL){
-        if(l->nxt->student == n){
-            l-> nxt = l->nxt->nxt;
-            return l;
-        }
-        else {
-            rimuovi_studente(l->nxt, n);
-        }
-    }
-    else if (l->student == n && l->nxt !=NULL){
-        l=rimuovi_in_testa(l);
-        return l;
-    }
-    else if (l->student == n && l->nxt == NULL){
-        l=rimuovi_in_coda(l);
-        return l;
-    }
-    return l;
-}
+// list rimuovi_studente(list l, int n){
+//     if(l->student != n && l->nxt != NULL){
+//         if(l->nxt->student == n){
+//             l-> nxt = l->nxt->nxt;
+//             return l;
+//         }
+//         else {
+//             rimuovi_studente(l->nxt, n);
+//         }
+//     }
+//     else if (l->student == n && l->nxt !=NULL){
+//         l=remove_head(l);
+//         return l;
+//     }
+//     else if (l->student == n && l->nxt == NULL){
+//         l=remove_tail(l);
+//         return l;
+//     }
+//     return l;
+// }
 
-int calc_pref(int pref_2,int pref_3,int pref_4){
+int compute_preference(int pref_2,int pref_3,int pref_4){
     int x;
     srand((unsigned int) getpid());
     x = rand()%100;

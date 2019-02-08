@@ -3,7 +3,7 @@
 
 #define POP_SIZE 7
 #define DEBUG {printf(RED "\t(%d) DEBUG at FILE: %s LINE:%d" RESET "\n", getpid(), __FILE__, __LINE__);}
-#define PRINT_ERROR if (errno) {fprintf(stderr, "\t%s:%d: PID=%5d: Error %d (%s)\n", \
+#define PRINT_ERROR if (errno) {fprintf(stderr, RED "\t%s:%d: PID=%5d: Error %d (%s)"RESET"\n", \
                       __FILE__,    __LINE__, getpid(), errno, strerror(errno));}
 
 #include <unistd.h>
@@ -131,12 +131,10 @@ void parent_handle_signal();
 void compute_mark(int number_marks);
 
 /* student.c */
-void invia_invito(); // invia inviti per unirsi al suo gruppo
-void leggi_inviti(list l); // legge la list contenente gli inviti ricevuti
-void init_student_parameters(); // inizializza le variabili  dello studente
+void read_invites(list l); // legge la list contenente gli inviti ricevuti
 void child_handle_signal();
+void init_student_parameters(); // inizializza le variabili  dello studente
 void init_ipc_id();
-void goodbye();
 
 /* utility.c */
 int random_between(pid_t seed, int min, int max);
@@ -150,14 +148,14 @@ void start_timer();
 void stop_timer();
 void deallocate_IPCs();
 void read_conf(char * config_path);
-void stampa_list (list l);
-list crea_nodo (int i,int voto, int p);
-list inserisci_in_testa(list l, int i,int voto,int p);
-list inserisci_in_coda(list l,int i,int voto, int p);
-list rimuovi_in_testa (list l);
-list rimuovi_in_coda (list l);
-list rimuovi_studente(list l, int n);
+void print_list (list l);
+list create_node (int i,int voto, int p);
+list insert_head(list l, int i,int voto,int p);
+list insert_tail(list l,int i,int voto, int p);
+list remove_head (list l);
+list remove_tail (list l);
+//list remove_student(list l, int n);
 int contains(list l, int stud);
-int calc_pref(int pref_2,int pref_3,int pref_4);
+int compute_preference(int pref_2,int pref_3,int pref_4);
 
 #endif // COMMON_H
