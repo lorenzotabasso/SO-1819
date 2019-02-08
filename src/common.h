@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define POP_SIZE 7
+#define POP_SIZE 20
 #define DEBUG {printf(RED "\t(%d) DEBUG at FILE: %s LINE:%d" RESET "\n", getpid(), __FILE__, __LINE__);}
 #define PRINT_ERROR if (errno) {fprintf(stderr, RED "\t%s:%d: PID=%5d: Error %d (%s)"RESET"\n", \
                       __FILE__,    __LINE__, getpid(), errno, strerror(errno));}

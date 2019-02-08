@@ -95,14 +95,16 @@ void set_shared_data(){
 void parent_handle_signal(){
     kill(0,SIGCONT);
     process_voti = POP_SIZE; // necesario, evita il student 0
-    
+
     compute_mark(process_voti);
-    
+
+    sleep(2); // only for correct displaying the marks
+
+    printf(YEL "\n\nPARENT (PID: %d) PUBBLICAZIONE VOTO APPELLO\n" RESET "\n", getpid());
+
     for(int j = 0; j < POP_SIZE; j++){
         relase_resource(id_children_semaphore, 0); // 0 -> the first semaphonre in the set
     }
-    
-    printf(YEL "\n\nPARENT (PID: %d) PUBBLICAZIONE VOTO APPELLO\n" RESET "\n", getpid());
 }
 
 void compute_mark(int number_marks){
@@ -139,7 +141,7 @@ void compute_mark(int number_marks){
             // trovo il voto massimo nel gruppo
             for (int j = 0; j < POP_SIZE; j++){
                 if (shm_pointer->marks[j][1] == fixed_id) {
-                    if (max_mark < shm_pointer->marks[j][3]){
+                    if (max_mark <= shm_pointer->marks[j][3]){
                         max_mark = shm_pointer->marks[j][3];
                     }
                 }

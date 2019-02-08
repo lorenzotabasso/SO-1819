@@ -80,7 +80,7 @@ void stop_timer() {
 void deallocate_IPCs(){
     id_message_queue = msgget(KEY_MESSAGE_QUEUE, 0666 | IPC_CREAT);
     id_message_queue_answer = msgget(KEY_MESSAGE_QUEUE_ANSWER, 0666 | IPC_CREAT);
-    
+
     if (msgctl(id_message_queue, IPC_RMID, NULL) == -1){
         PRINT_ERROR;
     }
@@ -148,10 +148,10 @@ void read_conf(char * config_path){
 
 void print_list (list l){
     while (l != NULL){
-        printf("%d; ", l->student);
+        printf(YEL "%d; ", l->student);
         l = l->nxt;
     }
-    printf("\n");
+    printf(RESET "\n");
 }
 
 list create_node (int i,int voto, int p){
@@ -238,11 +238,11 @@ int compute_preference(int pref_2,int pref_3,int pref_4){
     fflush(stdout);
     int ret = 0;
 
-    if(x >= pref_3 && x <= 100) {
+    if(x <= pref_2) {
         ret = 2;
-    } else if(x < pref_3) {
+    } else if(x <= pref_3 + pref_2) {
         ret = 3;
-    } else if(x < pref_4) {
+    } else if(x <= pref_2 + pref_3 + pref_4) {
         ret = 4;
     }
 

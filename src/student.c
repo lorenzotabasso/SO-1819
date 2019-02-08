@@ -33,7 +33,7 @@ int main(int argc, char * argv[]) {
                 printf("(PID: %d) Sono lo studente %d\n",getpid(), id_student);
                 printf("(PID: %d) Numero inviti : %d\n", getpid(), invites);
                 printf("(PID: %d) Sono lo studente %d e sto inviando un invito \n", getpid(), id_student);
-                
+
                 // sending an invite
                 costrutto.ask = 'W';
                 costrutto.student_id = id_student;
@@ -65,14 +65,14 @@ int main(int argc, char * argv[]) {
             msgrcv(id_message_queue_answer,&costrutto3,sizeof(costrutto3),id_student,IPC_NOWAIT);
 
             if(leader==1){
-                if(costrutto3.ask == 'S') {
+                if(costrutto3.ask == 'S' && group_num < nof_elem) {
                     if (!contains(group, costrutto3.student_id)) {
                         DEBUG;
                         group = insert_tail(group,costrutto3.student_id,costrutto3.ade_voto,costrutto3.pref_gruppo);
                         print_list(group);
                         invites++;
                         group_num++;
-                        printf("(PID: %d) %d elementi sui %d desiderati\n",getpid(), group_num,nof_elem);
+                        printf(CYN"(PID: %d) %d elementi sui %d desiderati"RESET"\n",getpid(), group_num,nof_elem);
                     }
                 }
                 else if(costrutto3.ask == 'N') {
@@ -152,7 +152,7 @@ void read_invites(list inviti){
                     msgsnd(id_message_queue_answer,&costrutto3,sizeof(costrutto3),0);
                     printf(GRN "(PID: %d) Risposta affermativa da parte dello studente %d allo studente %d" RESET"\n",getpid(), id_student,(*inviti).student);
                     printf(CYN "(PID: %d) Il leader dello studente %d ora è %d" RESET"\n",getpid(), id_student,(*inviti).student);
-                }   
+                }
                 else{
                     if(reject>0){
                         costrutto3.mtype=(*inviti).student;
@@ -208,6 +208,8 @@ void init_student_parameters(){
     invites = nof_invites;
     ade_mark = random_between(getpid(), 18, 30);
     nof_elem = compute_preference(dev_preference_2,dev_preference_3,dev_preference_4 );
+    //nof_elem = 4;
+    //printf(GRN"(PID: %d) preferenza gruppo : %d"RESET"\n", getpid(), nof_elem);
     final_mark = 0;
     group = create_node(id_student, ade_mark, nof_elem);
     group_num = 1; // at the beginning it counts himself
