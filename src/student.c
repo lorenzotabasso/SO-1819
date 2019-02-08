@@ -44,7 +44,7 @@ int main(int argc, char * argv[]) {
                 printf("(PID: %d) Invito inviato da studente %d \n",getpid(), id_student);
                 invites--;
 
-                sleep(1); // non cambiare 2 sec
+                sleep(2); // non cambiare 2 sec
             }
 
             msgrcv(id_message_queue,&costrutto,sizeof(costrutto),0,IPC_NOWAIT);
@@ -60,7 +60,7 @@ int main(int argc, char * argv[]) {
                 }
             }
 
-            sleep(1); // non cambiare 1 sec
+            //sleep(1); // non cambiare 1 sec
 
             msgrcv(id_message_queue_answer,&costrutto3,sizeof(costrutto3),id_student,IPC_NOWAIT);
 
