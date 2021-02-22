@@ -2,6 +2,8 @@
 
 Repository for the SO exam's project, A.Y. 2018-2019.
 
+Inside the `docs` folder you can find the text of the project and the final summary.
+
 For execute the project:
 
 1. Create 2 folders, named `build` and `bin` at top level.
