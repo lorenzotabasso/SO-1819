@@ -1,5 +1,3 @@
-# PROFESIONAL MAKEFILE
-
 Progetto: build/manager.o build/student.o build/utility.o 
 	./bin/manager
 
