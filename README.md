@@ -1,6 +1,6 @@
-# SO 18-19
+# OS 18-19
 
-Repository for the SO exam's project, A.Y. 2018-2019.
+Repository for the OS exam's project, A.Y. 2018-2019.
 
 Inside the `docs` folder you can find the text of the project and the final summary.
 
