@@ -1,4 +1,4 @@
-# OS 18-19
+# OS-1819
 
 Repository for the OS exam's project, A.Y. 2018-2019.
 
